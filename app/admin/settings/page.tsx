@@ -199,7 +199,7 @@ export default function AdminSettingsPage() {
               <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#2D2D2D" }}>{section.title}</h2>
             </div>
             <div style={{ padding: "1.5rem", display: "grid", gap: "1.25rem" }}>
-              {section.fields.map(field => (
+              {section.fields.map((field: Field) => (
                 <div key={field.key}>
                   <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#6b6b6b", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                     {field.label}
