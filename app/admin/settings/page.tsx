@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { Settings, Save, Loader2, Globe, MessageCircle, Mail, MapPin, Type, FileText, Share2 } from "lucide-react";
 import { Editor } from '@tinymce/tinymce-react';
@@ -36,7 +36,17 @@ const RichTextEditor = ({ value, onChange }: { value: string, onChange: (val: st
 
 interface SettingsMap { [key: string]: string; }
 
-const sections = [
+interface Field {
+  key: string;
+  label: string;
+  placeholder?: string;
+  hint?: string;
+  multiline?: boolean;
+  isHtml?: boolean;
+  rows?: number;
+}
+
+const sections: { title: string; icon: React.ReactNode; fields: Field[] }[] = [
   {
     title: "Kontak & Info",
     icon: <Globe size={18} />,

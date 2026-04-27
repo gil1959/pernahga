@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       data: {
         userId: session.user.id,
         name: session.user.name || "Bintang Tamu",
-        company: company || session.user.company || "",
+        company: company || (session.user as { company?: string }).company || "",
         role: role || "",
         content,
         rating: parseInt(rating),
