@@ -1,0 +1,136 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "showcase": "Portfolio",
+    "education": "Education",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "admin": "Admin Panel",
+    "logout": "Logout",
+    "consultation": "Free Consultation"
+  },
+  "hero": {
+    "badge": "#1 Tech Consultation for Your Business",
+    "cta_primary": "Free Consultation via WA",
+    "cta_secondary": "View Portfolio",
+    "stats": {
+      "clients": "Happy Clients",
+      "projects": "Completed Projects",
+      "years": "Years of Experience",
+      "free": "First Consultation"
+    }
+  },
+  "howItWorks": {
+    "title": "How Does It Work?",
+    "subtitle": "Three simple steps to the right technology solution for your business",
+    "step1_title": "Free Consultation",
+    "step1_desc": "Tell us about your business challenges. We listen at no cost.",
+    "step2_title": "Analysis & Recommendation",
+    "step2_desc": "Our expert team analyzes and provides the best solution recommendations.",
+    "step3_title": "Solution Implementation",
+    "step3_desc": "We help implement and ensure the solution works perfectly for your business."
+  },
+  "services": {
+    "title": "Service Packages",
+    "subtitle": "Choose the package that suits your needs and business scale",
+    "popular": "Most Popular",
+    "cta": "Get Started",
+    "cta_custom": "Contact Us",
+    "features": "What You Get"
+  },
+  "showcase": {
+    "title": "Our Portfolio",
+    "subtitle": "Software we've built for real clients with real problems",
+    "viewAll": "View All Projects",
+    "viewDetail": "View Details",
+    "techStack": "Technologies Used",
+    "caseStudy": "Case Study"
+  },
+  "education": {
+    "title": "Educational Content",
+    "subtitle": "Improve your technology literacy with easy-to-understand content",
+    "viewAll": "View All Content",
+    "youtube": "YouTube",
+    "tiktok": "TikTok"
+  },
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "subtitle": "Their trust is our greatest motivation"
+  },
+  "cta": {
+    "title": "Ready to Find the Right Technology Solution?",
+    "subtitle": "Your first consultation is completely free. No commitment, no hidden fees.",
+    "button": "Start Consultation via WhatsApp",
+    "note": "We usually respond within 24 hours"
+  },
+  "footer": {
+    "tagline": "The right technology solutions for growing businesses.",
+    "links_product": "Services",
+    "links_company": "Company",
+    "links_legal": "Legal",
+    "about": "About Us",
+    "contact": "Contact",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "refund": "Refund Policy",
+    "copyright": "© 2025 Pernahga. All rights reserved."
+  },
+  "auth": {
+    "login_title": "Welcome Back",
+    "login_subtitle": "Sign in to your Pernahga account",
+    "register_title": "Create New Account",
+    "register_subtitle": "Join Pernahga today",
+    "email": "Email",
+    "password": "Password",
+    "name": "Full Name",
+    "login_btn": "Sign In",
+    "register_btn": "Register",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "forgot_password": "Forgot password?"
+  },
+  "dashboard": {
+    "title": "My Dashboard",
+    "welcome": "Welcome",
+    "consultations": "My Consultations",
+    "saved": "Saved",
+    "profile": "Profile",
+    "no_consultations": "No consultation history yet",
+    "start_consultation": "Start Consultation",
+    "new_consultation": "New Consultation",
+    "status_pending": "Pending",
+    "status_in_progress": "In Progress",
+    "status_resolved": "Resolved",
+    "status_cancelled": "Cancelled"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have questions? Our team is ready to help you",
+    "name": "Your Name",
+    "email": "Your Email",
+    "company": "Company Name",
+    "topic": "Topic",
+    "message": "Message",
+    "send": "Send Message",
+    "or_whatsapp": "Or directly via WhatsApp",
+    "whatsapp_btn": "Chat on WhatsApp"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search...",
+    "filter": "Filter",
+    "all": "All"
+  }
+}

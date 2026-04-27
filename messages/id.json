@@ -1,0 +1,136 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "services": "Layanan",
+    "showcase": "Portofolio",
+    "education": "Edukasi",
+    "contact": "Kontak",
+    "login": "Masuk",
+    "register": "Daftar",
+    "dashboard": "Dashboard",
+    "admin": "Admin Panel",
+    "logout": "Keluar",
+    "consultation": "Konsultasi Gratis"
+  },
+  "hero": {
+    "badge": "Konsultasi Teknologi #1 untuk Bisnis Anda",
+    "cta_primary": "Konsultasi Gratis via WA",
+    "cta_secondary": "Lihat Portofolio",
+    "stats": {
+      "clients": "Klien Puas",
+      "projects": "Proyek Selesai",
+      "years": "Tahun Pengalaman",
+      "free": "Konsultasi Pertama"
+    }
+  },
+  "howItWorks": {
+    "title": "Bagaimana Cara Kerjanya?",
+    "subtitle": "Tiga langkah sederhana menuju solusi teknologi yang tepat untuk bisnis Anda",
+    "step1_title": "Konsultasi Gratis",
+    "step1_desc": "Ceritakan tantangan bisnis Anda. Kami dengarkan tanpa biaya apapun.",
+    "step2_title": "Analisis & Rekomendasi",
+    "step2_desc": "Tim ahli kami menganalisis dan memberikan rekomendasi solusi terbaik.",
+    "step3_title": "Implementasi Solusi",
+    "step3_desc": "Kami bantu implementasi dan pastikan solusi berjalan sempurna untuk bisnis Anda."
+  },
+  "services": {
+    "title": "Paket Layanan",
+    "subtitle": "Pilih paket yang sesuai dengan kebutuhan dan skala bisnis Anda",
+    "popular": "Paling Populer",
+    "cta": "Mulai Sekarang",
+    "cta_custom": "Hubungi Kami",
+    "features": "Yang Anda Dapatkan"
+  },
+  "showcase": {
+    "title": "Portofolio Kami",
+    "subtitle": "Software yang pernah kami bangun untuk klien nyata dengan masalah nyata",
+    "viewAll": "Lihat Semua Proyek",
+    "viewDetail": "Lihat Detail",
+    "techStack": "Teknologi yang Digunakan",
+    "caseStudy": "Studi Kasus"
+  },
+  "education": {
+    "title": "Konten Edukasi",
+    "subtitle": "Tingkatkan literasi teknologi Anda dengan konten yang mudah dipahami",
+    "viewAll": "Lihat Semua Konten",
+    "youtube": "YouTube",
+    "tiktok": "TikTok"
+  },
+  "testimonials": {
+    "title": "Apa Kata Klien Kami",
+    "subtitle": "Kepercayaan mereka adalah motivasi terbesar kami"
+  },
+  "cta": {
+    "title": "Siap Menemukan Solusi Teknologi yang Tepat?",
+    "subtitle": "Konsultasi pertama Anda sepenuhnya gratis. Tanpa komitmen, tanpa biaya tersembunyi.",
+    "button": "Mulai Konsultasi via WhatsApp",
+    "note": "Biasanya kami merespons dalam 1x24 jam"
+  },
+  "footer": {
+    "tagline": "Solusi teknologi yang tepat untuk bisnis yang berkembang.",
+    "links_product": "Layanan",
+    "links_company": "Perusahaan",
+    "links_legal": "Legal",
+    "about": "Tentang Kami",
+    "contact": "Kontak",
+    "terms": "Syarat dan Ketentuan",
+    "privacy": "Kebijakan Privasi",
+    "refund": "Kebijakan Pengembalian",
+    "copyright": "© 2025 Pernahga. Hak cipta dilindungi."
+  },
+  "auth": {
+    "login_title": "Selamat Datang Kembali",
+    "login_subtitle": "Masuk ke akun Pernahga Anda",
+    "register_title": "Buat Akun Baru",
+    "register_subtitle": "Bergabung dengan Pernahga hari ini",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "name": "Nama Lengkap",
+    "login_btn": "Masuk",
+    "register_btn": "Daftar",
+    "no_account": "Belum punya akun?",
+    "have_account": "Sudah punya akun?",
+    "forgot_password": "Lupa kata sandi?"
+  },
+  "dashboard": {
+    "title": "Dashboard Saya",
+    "welcome": "Selamat datang",
+    "consultations": "Konsultasi Saya",
+    "saved": "Tersimpan",
+    "profile": "Profil",
+    "no_consultations": "Belum ada riwayat konsultasi",
+    "start_consultation": "Mulai Konsultasi",
+    "new_consultation": "Konsultasi Baru",
+    "status_pending": "Menunggu",
+    "status_in_progress": "Dalam Proses",
+    "status_resolved": "Selesai",
+    "status_cancelled": "Dibatalkan"
+  },
+  "contact": {
+    "title": "Hubungi Kami",
+    "subtitle": "Ada pertanyaan? Tim kami siap membantu Anda",
+    "name": "Nama Anda",
+    "email": "Email Anda",
+    "company": "Nama Perusahaan",
+    "topic": "Topik",
+    "message": "Pesan",
+    "send": "Kirim Pesan",
+    "or_whatsapp": "Atau langsung via WhatsApp",
+    "whatsapp_btn": "Chat di WhatsApp"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "publish": "Terbitkan",
+    "unpublish": "Sembunyikan",
+    "back": "Kembali",
+    "next": "Selanjutnya",
+    "search": "Cari...",
+    "filter": "Filter",
+    "all": "Semua"
+  }
+}
