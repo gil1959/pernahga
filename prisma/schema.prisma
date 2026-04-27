@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -74,8 +74,8 @@ model Package {
   price       String
   priceNote   String?
   priceNoteEn String?
-  features    String   @db.LongText // JSON array
-  featuresEn  String   @db.LongText // JSON array
+  features    String   @db.Text // JSON array
+  featuresEn  String   @db.Text // JSON array
   isPopular   Boolean  @default(false)
   isActive    Boolean  @default(true)
   order       Int      @default(0)
@@ -90,15 +90,15 @@ model Showcase {
   slug            String   @unique
   description     String   @db.Text
   descriptionEn   String   @db.Text
-  longDescription String   @db.LongText
-  longDescriptionEn String @db.LongText
+  longDescription String   @db.Text
+  longDescriptionEn String @db.Text
   thumbnail       String
-  images          String   @db.LongText // JSON array
+  images          String   @db.Text // JSON array
   tags            String   @db.Text // JSON array
   techStack       String   @db.Text // JSON array
   demoUrl         String?
-  caseStudy       String?  @db.LongText
-  caseStudyEn     String?  @db.LongText
+  caseStudy       String?  @db.Text
+  caseStudyEn     String?  @db.Text
   isPublished     Boolean  @default(false)
   isFeatured      Boolean  @default(false)
   order           Int      @default(0)
@@ -174,7 +174,7 @@ model SavedItem {
 model SiteSettings {
   id              String   @id @default(cuid())
   key             String   @unique
-  value           String   @db.LongText
+  value           String   @db.Text
   updatedAt       DateTime @updatedAt
 }
 
