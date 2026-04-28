@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
-import { Settings, Save, Loader2, Globe, MessageCircle, Mail, MapPin, Type, FileText, Share2 } from "lucide-react";
+import { Settings, Save, Loader2, Globe, MessageCircle, Mail, MapPin, Type, FileText, Share2, KeyRound } from "lucide-react";
 import { Editor } from '@tinymce/tinymce-react';
 
 const RichTextEditor = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
@@ -111,6 +111,30 @@ const sections: { title: string; icon: React.ReactNode; fields: Field[] }[] = [
       { key: "captchaSecretKey", label: "Captcha Secret Key", placeholder: "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe" },
     ],
   },
+  {
+    title: "Google OAuth (Login Google)",
+    icon: <KeyRound size={18} />,
+    fields: [
+      {
+        key: "googleOAuthEnabled",
+        label: "Aktifkan Login Google",
+        placeholder: "true",
+        hint: "Isi 'true' untuk aktifkan, kosongkan atau 'false' untuk nonaktifkan.",
+      },
+      {
+        key: "googleClientId",
+        label: "Google Client ID",
+        placeholder: "xxxx.apps.googleusercontent.com",
+        hint: "Dari Google Cloud Console → APIs & Services → Credentials",
+      },
+      {
+        key: "googleClientSecret",
+        label: "Google Client Secret",
+        placeholder: "GOCSPX-xxxxxxxxxxxx",
+        hint: "Juga simpan di env var GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET di Vercel/server.",
+      },
+    ],
+  },
 ];
 
 export default function AdminSettingsPage() {
@@ -199,7 +223,7 @@ export default function AdminSettingsPage() {
               <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#2D2D2D" }}>{section.title}</h2>
             </div>
             <div style={{ padding: "1.5rem", display: "grid", gap: "1.25rem" }}>
-              {section.fields.map((field: Field) => (
+              {section.fields.map(field => (
                 <div key={field.key}>
                   <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#6b6b6b", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                     {field.label}

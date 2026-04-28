@@ -2,6 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const reviews = await prisma.testimonial.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(reviews);
+  } catch (error) {
+    return NextResponse.json({ message: "Terjadi kesalahan" }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -26,12 +42,12 @@ export async function POST(req: Request) {
         role: role || "",
         content,
         rating: parseInt(rating),
-        isPublished: false, // Default: butuh persetujuan admin
+        isPublished: true, // Langsung tampil tanpa persetujuan admin
       },
     });
 
     return NextResponse.json(
-      { message: "Ulasan berhasil dikirim dan menunggu persetujuan", review },
+      { message: "Ulasan berhasil dikirim dan langsung tampil", review },
       { status: 201 }
     );
   } catch (error) {

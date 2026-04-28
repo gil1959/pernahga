@@ -135,7 +135,7 @@ model Testimonial {
   content     String   @db.Text
   contentEn   String?  @db.Text
   rating      Int      @default(5)
-  isPublished Boolean  @default(false)
+  isPublished Boolean  @default(true)
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -176,6 +176,17 @@ model SiteSettings {
   key             String   @unique
   value           String   @db.Text
   updatedAt       DateTime @updatedAt
+}
+
+model OtpToken {
+  id         String   @id @default(cuid())
+  identifier String   // email
+  token      String
+  type       String   @default("password_reset") // password_reset | password_change
+  expires    DateTime
+  createdAt  DateTime @default(now())
+
+  @@unique([identifier, type])
 }
 
 enum Role {
