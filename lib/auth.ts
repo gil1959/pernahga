@@ -17,7 +17,7 @@ async function getGoogleConfig() {
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const nextAuthConfig = {
   session: {
     strategy: "jwt",
   },
@@ -55,11 +55,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-      allowDangerousEmailAccountLinking: true,
-    }),
+    // GoogleProvider will be added dynamically in route.ts
   ],
   callbacks: {
     async signIn({ user, account }) {
@@ -107,4 +103,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-});
+};
+
+export const { handlers, auth, signIn, signOut } = NextAuth(nextAuthConfig);

@@ -73,9 +73,22 @@ export default function PackagesSection({
             const features: string[] = JSON.parse(
               locale === "en" ? pkg.featuresEn : pkg.features
             );
-            const isCustom = pkg.price === "Custom" || pkg.price === "Gratis";
+            const lowerPrice = pkg.price.toLowerCase();
+            const isCustom = lowerPrice === "custom" || lowerPrice === "gratis" || lowerPrice === "free";
             const waMessage = `Halo Pernahga! Saya tertarik dengan paket ${pkg.title}. Bisa ceritakan lebih lanjut?`;
             const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waMessage)}`;
+
+            const formatPrice = (priceStr: string) => {
+              const lower = priceStr.toLowerCase();
+              if (lower === "free" || lower === "gratis" || lower === "custom") return priceStr;
+              
+              const num = parseInt(priceStr.replace(/\D/g, ''), 10);
+              if (!isNaN(num) && priceStr.trim().match(/^\d+$/)) {
+                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+              }
+              return priceStr;
+            };
+            const displayPrice = formatPrice(pkg.price);
 
             return (
               <motion.div
@@ -135,7 +148,7 @@ export default function PackagesSection({
 
                 <div style={{ marginBottom: "1.75rem" }}>
                   <div style={{ fontSize: "2rem", fontWeight: 800, color: pkg.isPopular ? "#F4F1EA" : "#2D2D2D" }}>
-                    {pkg.price}
+                    {displayPrice}
                   </div>
                   {priceNote && (
                     <div style={{ fontSize: "0.8rem", color: pkg.isPopular ? "rgba(244,241,234,0.5)" : "#9b9b9b", marginTop: "0.25rem" }}>
@@ -216,7 +229,7 @@ export default function PackagesSection({
                   }}
                 >
                   <MessageCircle size={16} />
-                  {isCustom && pkg.price !== "Gratis" ? t("cta_custom") : t("cta")}
+                  {isCustom && lowerPrice !== "gratis" && lowerPrice !== "free" ? t("cta_custom") : t("cta")}
                 </a>
               </motion.div>
             );

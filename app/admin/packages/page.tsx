@@ -114,6 +114,18 @@ export default function AdminPackagesPage() {
     fetchPackages();
   };
 
+  const formatPrice = (priceStr: string) => {
+    if (!priceStr) return "";
+    const lower = priceStr.toLowerCase();
+    if (lower === "free" || lower === "gratis" || lower === "custom") return priceStr;
+    
+    const num = parseInt(priceStr.replace(/\D/g, ''), 10);
+    if (!isNaN(num) && priceStr.trim().match(/^\d+$/)) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+    }
+    return priceStr;
+  };
+
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "0.625rem 0.875rem",
     border: "1px solid #e5e0d8", borderRadius: "8px",
@@ -180,7 +192,7 @@ export default function AdminPackagesPage() {
                   )}
                 </div>
                 <p style={{ fontSize: "0.85rem", color: "#6b6b6b", marginBottom: "0.25rem" }}>{pkg.description}</p>
-                <span style={{ fontSize: "1rem", fontWeight: 800, color: "#8DA399" }}>{pkg.price}</span>
+                <span style={{ fontSize: "1rem", fontWeight: 800, color: "#8DA399" }}>{formatPrice(pkg.price)}</span>
                 {pkg.priceNote && <span style={{ fontSize: "0.8rem", color: "#9b9b9b", marginLeft: "0.5rem" }}>{pkg.priceNote}</span>}
               </div>
 
