@@ -13,7 +13,8 @@ import {
   Settings, 
   Users,
   LogOut,
-  MessageCircle
+  MessageCircle,
+  Shield
 } from "lucide-react";
 
 const menuItems = [
@@ -24,6 +25,7 @@ const menuItems = [
   { href: "/admin/education", label: "Edukasi", icon: <Youtube size={20} /> },
   { href: "/admin/testimonials", label: "Testimonial", icon: <MessageSquareQuote size={20} /> },
   { href: "/admin/users", label: "Pengguna", icon: <Users size={20} /> },
+  { href: "/admin/registered-ips", label: "Daftar IP", icon: <Shield size={20} /> },
   { href: "/admin/settings", label: "Pengaturan", icon: <Settings size={20} /> },
 ];
 

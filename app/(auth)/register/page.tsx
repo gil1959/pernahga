@@ -15,9 +15,11 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [maskedPhone, setMaskedPhone] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     otp: "",
   });
@@ -27,26 +29,45 @@ export default function RegisterPage() {
   };
 
   const handleSendOtp = async () => {
+    if (!formData.name || formData.name.trim().length < 2) {
+      toast.error("Nama minimal 2 karakter");
+      return;
+    }
     if (!formData.email) {
       toast.error("Email harus diisi");
       return;
     }
-    
+    if (!formData.phone || formData.phone.replace(/\D/g, "").length < 10) {
+      toast.error("Nomor WhatsApp minimal 10 digit");
+      return;
+    }
+    if (!formData.password || formData.password.length < 8) {
+      toast.error("Kata sandi minimal 8 karakter");
+      return;
+    }
+
     setIsSendingOtp(true);
     try {
       const res = await fetch("/api/auth/register/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+        }),
       });
-      
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Gagal mengirim OTP");
-      
+
+      setMaskedPhone(data.phone || "");
       setOtpSent(true);
-      toast.success("Kode OTP telah dikirim ke email Anda");
-    } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan");
+      toast.success("Kode OTP telah dikirim ke WhatsApp Anda");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Terjadi kesalahan";
+      toast.error(msg);
     } finally {
       setIsSendingOtp(false);
     }
@@ -60,7 +81,6 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
-
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -69,25 +89,40 @@ export default function RegisterPage() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Terjadi kesalahan");
-      }
+      if (!res.ok) throw new Error(data.message || "Terjadi kesalahan");
 
       toast.success("Registrasi berhasil, silakan masuk");
-      setTimeout(() => {
-        router.push("/login");
-      }, 1500);
-    } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan, silakan coba lagi");
+      setTimeout(() => router.push("/login"), 1500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Terjadi kesalahan";
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const inputBase: React.CSSProperties = {
+    width: "100%",
+    padding: "0.75rem 1rem",
+    border: "1px solid #ddd8ce",
+    borderRadius: "10px",
+    fontSize: "0.95rem",
+    backgroundColor: "white",
+    color: "#2D2D2D",
+    outline: "none",
+  };
+
+  const labelBase: React.CSSProperties = {
+    display: "block",
+    fontSize: "0.875rem",
+    fontWeight: 600,
+    color: "#2D2D2D",
+    marginBottom: "0.5rem",
+  };
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", backgroundColor: "#F4F1EA" }}>
-      {/* Right Panel - Info (Reversed for Register) */}
+      {/* Right Panel - Info */}
       <div
         className="hidden-mobile"
         style={{
@@ -105,12 +140,10 @@ export default function RegisterPage() {
       >
         <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "50%", height: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%)" }} />
         <div style={{ position: "absolute", bottom: "-10%", right: "-10%", width: "50%", height: "50%", background: "radial-gradient(circle, rgba(45,45,45,0.1) 0%, transparent 60%)" }} />
-        
+
         <div style={{ zIndex: 1, display: "flex", justifyContent: "flex-end" }}>
           <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: "10px", textDecoration: "none", color: "#F4F1EA" }}>
-            <span style={{ fontWeight: 800, fontSize: "1.5rem", letterSpacing: "-0.02em" }}>
-              Pernahga
-            </span>
+            <span style={{ fontWeight: 800, fontSize: "1.5rem", letterSpacing: "-0.02em" }}>Pernahga</span>
             <Logo size={42} />
           </Link>
         </div>
@@ -120,7 +153,7 @@ export default function RegisterPage() {
             Bergabung bersama solusi tepat.
           </h1>
           <p style={{ color: "rgba(244,241,234,0.9)", fontSize: "1.1rem", lineHeight: 1.6 }}>
-            Buat akun sekarang untuk mendapatkan akses konsultasi gratis pertama Anda dan berbagai panduan bisnis lainnya.
+            Buat akun sekarang. Verifikasi cukup lewat WhatsApp, tanpa ribet.
           </p>
         </div>
 
@@ -131,33 +164,11 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Left Panel - Register Form */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "2rem",
-          maxWidth: "700px",
-          width: "100%",
-          margin: "0 auto",
-          order: 1,
-        }}
-      >
-        <Link 
-          href="/" 
-          style={{ 
-            display: "inline-flex", 
-            alignItems: "center", 
-            gap: "0.5rem", 
-            color: "#6b6b6b", 
-            textDecoration: "none",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            marginBottom: "3rem",
-            alignSelf: "flex-start"
-          }}
+      {/* Left Panel - Form */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "2rem", maxWidth: "700px", width: "100%", margin: "0 auto", order: 1 }}>
+        <Link
+          href="/"
+          style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", color: "#6b6b6b", textDecoration: "none", fontSize: "0.9rem", fontWeight: 600, marginBottom: "3rem", alignSelf: "flex-start" }}
         >
           <ArrowLeft size={16} />
           Kembali ke Beranda
@@ -172,14 +183,16 @@ export default function RegisterPage() {
             {t("register_title")}
           </h2>
           <p style={{ color: "#6b6b6b", marginBottom: "2.5rem" }}>
-            {otpSent ? "Masukkan kode verifikasi yang dikirim ke email Anda" : t("register_subtitle")}
+            {otpSent
+              ? `Masukkan 6 digit OTP yang kami kirim ke WhatsApp ${maskedPhone}`
+              : t("register_subtitle")}
           </p>
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             {!otpSent ? (
               <>
                 <div>
-                  <label htmlFor="name" style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#2D2D2D", marginBottom: "0.5rem" }}>
+                  <label htmlFor="name" style={labelBase}>
                     {t("name")}
                   </label>
                   <input
@@ -187,7 +200,8 @@ export default function RegisterPage() {
                     name="name"
                     type="text"
                     required
-                    className="input-field"
+                    minLength={2}
+                    style={inputBase}
                     placeholder="Budi Santoso"
                     value={formData.name}
                     onChange={handleChange}
@@ -196,7 +210,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="email" style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#2D2D2D", marginBottom: "0.5rem" }}>
+                  <label htmlFor="email" style={labelBase}>
                     {t("email")}
                   </label>
                   <input
@@ -204,8 +218,8 @@ export default function RegisterPage() {
                     name="email"
                     type="email"
                     required
-                    className="input-field"
-                    placeholder="nama@perusahaan.com"
+                    style={inputBase}
+                    placeholder="nama@email.com"
                     value={formData.email}
                     onChange={handleChange}
                     disabled={isSendingOtp}
@@ -213,7 +227,28 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="password" style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#2D2D2D", marginBottom: "0.5rem" }}>
+                  <label htmlFor="phone" style={labelBase}>
+                    Nomor WhatsApp
+                  </label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    inputMode="numeric"
+                    style={inputBase}
+                    placeholder="08123456789"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    disabled={isSendingOtp}
+                  />
+                  <p style={{ fontSize: "0.75rem", color: "#8b8b8b", marginTop: "0.4rem" }}>
+                    Kode OTP akan dikirim ke nomor WhatsApp ini
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="password" style={labelBase}>
                     {t("password")}
                   </label>
                   <input
@@ -221,9 +256,9 @@ export default function RegisterPage() {
                     name="password"
                     type="password"
                     required
-                    minLength={6}
-                    className="input-field"
-                    placeholder="Minimal 6 karakter"
+                    minLength={8}
+                    style={inputBase}
+                    placeholder="Minimal 8 karakter"
                     value={formData.password}
                     onChange={handleChange}
                     disabled={isSendingOtp}
@@ -231,24 +266,66 @@ export default function RegisterPage() {
                 </div>
               </>
             ) : (
-              <div>
-                <label htmlFor="otp" style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "#2D2D2D", marginBottom: "0.5rem" }}>
-                  Kode Verifikasi (OTP)
-                </label>
-                <input
-                  id="otp"
-                  name="otp"
-                  type="text"
-                  required
-                  maxLength={6}
-                  className="input-field"
-                  placeholder="Masukkan 6 digit kode"
-                  value={formData.otp}
-                  onChange={handleChange}
+              <>
+                <div>
+                  <label htmlFor="otp" style={labelBase}>
+                    Kode Verifikasi (OTP)
+                  </label>
+                  <input
+                    id="otp"
+                    name="otp"
+                    type="text"
+                    required
+                    inputMode="numeric"
+                    pattern="\d{6}"
+                    maxLength={6}
+                    style={{ ...inputBase, textAlign: "center", fontSize: "1.5rem", letterSpacing: "0.5rem", fontWeight: 700 }}
+                    placeholder="000000"
+                    value={formData.otp}
+                    onChange={handleChange}
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={isSendingOtp || isLoading}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#8DA399",
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                    cursor: isSendingOtp ? "wait" : "pointer",
+                    textAlign: "left",
+                    padding: 0,
+                  }}
+                >
+                  {isSendingOtp ? "Mengirim ulang..." : "Kirim ulang OTP"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpSent(false);
+                    setFormData((prev) => ({ ...prev, otp: "" }));
+                  }}
                   disabled={isLoading}
-                  style={{ textAlign: "center", fontSize: "1.5rem", letterSpacing: "0.5rem", fontWeight: 700 }}
-                />
-              </div>
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#6b6b6b",
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    padding: 0,
+                  }}
+                >
+                  Ubah data pendaftaran
+                </button>
+              </>
             )}
 
             <button
@@ -269,18 +346,13 @@ export default function RegisterPage() {
                 alignItems: "center",
                 gap: "0.5rem",
                 marginTop: "1rem",
-                transition: "all 0.2s",
                 opacity: (isLoading || isSendingOtp) ? 0.7 : 1,
               }}
-              onMouseEnter={(e) => {
-                if(!isLoading && !isSendingOtp) (e.currentTarget as HTMLElement).style.backgroundColor = "#4a4a4a";
-              }}
-              onMouseLeave={(e) => {
-                if(!isLoading && !isSendingOtp) (e.currentTarget as HTMLElement).style.backgroundColor = "#2D2D2D";
-              }}
             >
-              {(isLoading || isSendingOtp) && <Loader2 size={18} className="animate-spin" style={{ animation: "spin 1s linear infinite" }} />}
-              {!otpSent ? (isSendingOtp ? "Mengirim OTP..." : "Daftar Akun") : (isLoading ? "Memverifikasi..." : "Verifikasi & Daftar")}
+              {(isLoading || isSendingOtp) && <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />}
+              {!otpSent
+                ? (isSendingOtp ? "Mengirim OTP..." : "Daftar Akun")
+                : (isLoading ? "Memverifikasi..." : "Verifikasi & Daftar")}
             </button>
           </form>
 

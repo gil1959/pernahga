@@ -1,6 +1,5 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
@@ -55,15 +54,15 @@ export const nextAuthConfig: NextAuthConfig = {
         };
       },
     }),
-    // GoogleProvider will be added dynamically in route.ts
+    // GoogleProvider injected dynamically in route.ts
   ],
   callbacks: {
     async signIn({ user, account }) {
-      // For Google OAuth: check if enabled in settings
       if (account?.provider === "google") {
         const cfg = await getGoogleConfig();
         if (cfg.googleOAuthEnabled !== "true") return false;
-        // Auto-create or link user in DB
+        // Auto-create or link user. phoneVerified intentionally null:
+        // middleware will redirect such users to /verify-phone.
         if (user.email) {
           const existingUser = await prisma.user.findUnique({ where: { email: user.email } });
           if (!existingUser) {
@@ -86,19 +85,31 @@ export const nextAuthConfig: NextAuthConfig = {
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      // First sign-in: hydrate token from DB.
       if (user) {
-        // Fetch fresh role from DB
         const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
         token.role = dbUser?.role ?? "USER";
         token.id = dbUser?.id ?? (user.id as string);
+        token.phoneVerified = dbUser?.phoneVerified ? true : false;
+        token.phone = dbUser?.phone ?? null;
+      }
+      // On manual session.update() refresh phone fields.
+      if (trigger === "update" && token.id) {
+        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string } });
+        if (dbUser) {
+          token.phoneVerified = dbUser.phoneVerified ? true : false;
+          token.phone = dbUser.phone ?? null;
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.role = token.role as string;
         session.user.id = token.id as string;
+        session.user.phoneVerified = Boolean(token.phoneVerified);
+        session.user.phone = (token.phone as string | null) ?? null;
       }
       return session;
     },

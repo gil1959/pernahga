@@ -135,6 +135,24 @@ const sections: { title: string; icon: React.ReactNode; fields: Field[] }[] = [
       },
     ],
   },
+  {
+    title: "WhatsApp OTP (Fonnte)",
+    icon: <MessageCircle size={18} />,
+    fields: [
+      {
+        key: "fonnteEnabled",
+        label: "Aktifkan Pengiriman OTP via WhatsApp",
+        placeholder: "true",
+        hint: "Isi 'true' untuk aktifkan, 'false' untuk nonaktifkan. Saat dinonaktifkan, register & verifikasi nomor akan gagal.",
+      },
+      {
+        key: "fonnteToken",
+        label: "Fonnte Device Token",
+        placeholder: "AbCdEf1234567890XyZ_abcdef",
+        hint: "Dari https://fonnte.com → Perangkat → klik device Connected → copy token. Disimpan terenkripsi di DB.",
+      },
+    ],
+  },
 ];
 
 export default function AdminSettingsPage() {
