@@ -16,7 +16,7 @@ export async function provisionTrial(userId: string): Promise<void> {
   if (existing) return;
 
   const trialPkg = await prisma.package.findFirst({
-    where: { title: "Trial", isActive: true },
+    where: { title: "Trial" },
   });
 
   // Skip silently if Trial package row hasn't been seeded yet.
