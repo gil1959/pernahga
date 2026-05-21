@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
@@ -17,7 +17,7 @@ async function getGoogleConfig() {
   }
 }
 
-export const nextAuthConfig = {
+export const nextAuthConfig: NextAuthConfig = {
   session: {
     strategy: "jwt",
   },
