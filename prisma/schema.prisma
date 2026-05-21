@@ -21,6 +21,9 @@ model User {
   phone         String?   @unique
   phoneVerified DateTime?
   company       String?
+  registrationIp String?
+  isBanned      Boolean   @default(false)
+  bannedReason  String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -29,6 +32,10 @@ model User {
   consultations Consultation[]
   savedItems    SavedItem[]
   testimonials  Testimonial[]
+  subscription  Subscription?
+  capabilities  UserCapability[]
+  usageLogs     UsageLog[]
+  connections   ConnectionRequest[]
 }
 
 model Account {
@@ -80,8 +87,14 @@ model Package {
   isPopular   Boolean  @default(false)
   isActive    Boolean  @default(true)
   order       Int      @default(0)
+  // Plan capabilities (JSON array of CapabilityChannel) — auto-grant when assigned
+  defaultCapabilities String? @db.Text
+  monthlyCredits      Int     @default(0)
+  creditsRefreshDays  Int     @default(30)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  subscriptions Subscription[]
 }
 
 model Showcase {
@@ -205,4 +218,128 @@ enum ConsultationStatus {
   IN_PROGRESS
   RESOLVED
   CANCELLED
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+  DORMANT
+}
+
+enum CapabilityChannel {
+  WHATSAPP
+  INSTAGRAM_DM
+  TELEGRAM
+  EMAIL
+  DISCORD
+  INSTAGRAM_POST
+  FACEBOOK_POST
+  LINKEDIN_POST
+  THREADS_POST
+  TWITTER_POST
+  TIKTOK_POST
+  PINTEREST_POST
+  BOOKING_CALENDAR
+  IMAGE_GEN
+  VIDEO_SCRIPT
+  DAILY_NEWS_BRIEFING
+  WEBHOOK_INTEGRATION
+  WHITE_LABEL
+}
+
+enum ConnectionStatus {
+  REQUESTED
+  CONTACTED
+  ACTIVE
+  REVOKED
+  REJECTED
+}
+
+model RegisteredIp {
+  id          String   @id @default(cuid())
+  ip          String   @unique
+  userId      String?  // first user that registered with this IP
+  isWhitelist Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Subscription {
+  id            String              @id @default(cuid())
+  userId        String              @unique
+  packageId     String
+  status        SubscriptionStatus  @default(TRIAL)
+  startsAt      DateTime            @default(now())
+  endsAt        DateTime?
+  trialEndsAt   DateTime?
+  cancelledAt   DateTime?
+  // Credit accounting
+  creditsTotal  Int                 @default(0)  // monthly quota
+  creditsUsed   Int                 @default(0)
+  creditsResetAt DateTime?          // next refresh tick
+  // Billing
+  paymentMethod String?             // "midtrans" | "manual" | "trial"
+  externalRef   String?             // Midtrans order id, etc.
+  notes         String?             @db.Text
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package Package @relation(fields: [packageId], references: [id])
+
+  @@index([status])
+  @@index([packageId])
+}
+
+model UserCapability {
+  id         String            @id @default(cuid())
+  userId     String
+  channel    CapabilityChannel
+  enabled    Boolean           @default(false)
+  // Capability is granted by plan AND requires admin toggle on
+  grantedByPlan Boolean        @default(false)
+  notes      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channel])
+  @@index([channel])
+}
+
+model UsageLog {
+  id        String   @id @default(cuid())
+  userId    String
+  channel   String   // free-form (whatsapp_send, image_gen, post_ig, etc.)
+  credits   Int      @default(1)
+  meta      String?  @db.Text // JSON
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([channel])
+}
+
+model ConnectionRequest {
+  id          String           @id @default(cuid())
+  userId      String
+  channel     CapabilityChannel
+  status      ConnectionStatus @default(REQUESTED)
+  // Form-fed details (e.g. user's IG handle, phone, account name)
+  handle      String?
+  notes       String?          @db.Text
+  adminNotes  String?          @db.Text
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([userId])
 }

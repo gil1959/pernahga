@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone, sendPhoneOtp } from "@/lib/wa-fonnte";
+import { getClientIp, ipAllowedForRegistration } from "@/lib/request-ip";
 
 /**
  * POST /api/auth/register/send-otp
@@ -41,6 +42,13 @@ export async function POST(req: Request) {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Nomor WhatsApp tidak valid";
       return NextResponse.json({ message: msg }, { status: 400 });
+    }
+
+    // IP dedup check (early — fail fast).
+    const ip = getClientIp(req.headers);
+    const ipCheck = await ipAllowedForRegistration(ip);
+    if (!ipCheck.allowed) {
+      return NextResponse.json({ message: ipCheck.reason }, { status: 409 });
     }
 
     // Existence checks: email and phone must both be free.

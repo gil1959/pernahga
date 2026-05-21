@@ -1,14 +1,20 @@
 /**
  * WhatsApp OTP sender via Fonnte.
  *
- * ENV required:
- *  - FONNTE_TOKEN  (device token from https://fonnte.com)
- *  - FONNTE_SENDER (optional, custom sender label, default "Pernahga")
+ * Token sources (in order):
+ *   1. SiteSettings.fonnteToken (DB)
+ *   2. ENV FONNTE_TOKEN (fallback for older deploys)
+ *
+ * Config knobs (DB only):
+ *   - fonnteEnabled = "true" | "false"
+ *   - fonnteToken   = device token from https://fonnte.com
  *
  * Notes:
  *  - Fonnte expects target as MSISDN without "+" sign (e.g. 6281234567890).
  *  - Returns provider-specific status; we throw on non-2xx.
  */
+import { prisma } from "@/lib/prisma";
+
 type FonnteResponse = {
   status?: boolean;
   detail?: string;
@@ -20,6 +26,23 @@ type FonnteResponse = {
 };
 
 const FONNTE_API = "https://api.fonnte.com/send";
+
+async function getFonnteConfig(): Promise<{ token: string; enabled: boolean }> {
+  let token = process.env.FONNTE_TOKEN || "";
+  let enabled = true;
+  try {
+    const rows = await prisma.siteSettings.findMany({
+      where: { key: { in: ["fonnteToken", "fonnteEnabled"] } },
+    });
+    for (const r of rows) {
+      if (r.key === "fonnteToken" && r.value) token = r.value;
+      if (r.key === "fonnteEnabled") enabled = r.value !== "false";
+    }
+  } catch {
+    /* ignore DB issues, fall back to ENV */
+  }
+  return { token, enabled };
+}
 
 /**
  * Normalize an Indonesian phone number to E.164-without-plus form expected by Fonnte.
@@ -48,10 +71,13 @@ export async function sendWhatsApp(
   target: string,
   message: string
 ): Promise<FonnteResponse> {
-  const token = process.env.FONNTE_TOKEN;
+  const { token, enabled } = await getFonnteConfig();
+  if (!enabled) {
+    throw new Error("Pengiriman OTP WhatsApp dinonaktifkan oleh administrator.");
+  }
   if (!token) {
     throw new Error(
-      "FONNTE_TOKEN belum di-set. Hubungi administrator untuk mengaktifkan OTP WhatsApp."
+      "Token Fonnte belum di-set. Hubungi administrator untuk mengaktifkan OTP WhatsApp."
     );
   }
 
