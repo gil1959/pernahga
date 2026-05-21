@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { signIn } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
@@ -91,8 +92,24 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Terjadi kesalahan");
 
-      toast.success("Registrasi berhasil, silakan masuk");
-      setTimeout(() => router.push("/login"), 1500);
+      toast.success("Registrasi berhasil, mengarahkan ke dashboard...");
+
+      // Auto sign-in pakai credentials yang baru saja di-create.
+      const signInRes = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (signInRes?.error) {
+        // Fallback: kirim user ke /login kalau auto sign-in gagal.
+        toast.error("Login otomatis gagal, silakan login manual.");
+        setTimeout(() => router.push("/login"), 1200);
+      } else {
+        // phoneVerified=now() udah di-set saat register, jadi proxy lolosin /dashboard.
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Terjadi kesalahan";
       toast.error(msg);
