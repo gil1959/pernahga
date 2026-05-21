@@ -85,7 +85,7 @@ export default function DashboardOverviewPage() {
       {/* Header */}
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#2D2D2D", letterSpacing: "-0.02em" }}>
-          Halo, {u.name?.split(" ")[0] || "Bos"} 👋
+          Halo, {u.name?.split(" ")[0] || "there"}
         </h1>
         <p style={{ color: "#6b6b6b" }}>Pantau usage, kelola connect, dan kontrol Pega di sini.</p>
       </div>

@@ -73,7 +73,7 @@ export default function BillingPage() {
             <div style={{ position: "absolute", top: "-30%", right: "-10%", width: "300px", height: "300px", background: "radial-gradient(circle, rgba(141,163,153,0.2) 0%, transparent 60%)" }} />
             <div style={{ position: "relative", zIndex: 1 }}>
               <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#8DA399", textTransform: "uppercase", letterSpacing: "0.08em" }}>Paket Saat Ini</span>
-              <h2 style={{ fontSize: "2.5rem", fontWeight: 800, margin: "0.5rem 0" }}>{sub.package.title}</h2>
+              <h2 style={{ fontSize: "2.5rem", fontWeight: 800, margin: "0.5rem 0", color: "#F4F1EA" }}>{sub.package.title}</h2>
               <div style={{ fontSize: "1.25rem", color: "rgba(244,241,234,0.85)" }}>
                 {sub.package.price === "custom" || sub.package.price === "Gratis" ? sub.package.price : `Rp ${Number(sub.package.price).toLocaleString("id-ID")} / bulan`}
               </div>

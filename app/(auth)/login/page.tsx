@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "react-hot-toast";
-import { ArrowLeft, Loader2, Mail, KeyRound, Eye, EyeOff, ChevronLeft, User } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, KeyRound, Eye, EyeOff, ChevronLeft, User, X } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 
 type Modal = null | "forgot_password" | "forgot_username";
@@ -299,7 +299,7 @@ export default function LoginPage() {
         <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.55)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
           onClick={(e) => { if (e.target === e.currentTarget) resetFpModal(); }}>
           <div style={{ backgroundColor: "white", borderRadius: "20px", width: "100%", maxWidth: "480px", padding: "2.5rem", position: "relative" }}>
-            <button onClick={resetFpModal} style={{ position: "absolute", top: "1.25rem", right: "1.25rem", background: "none", border: "none", cursor: "pointer", color: "#9b9b9b" }}>✕</button>
+            <button onClick={resetFpModal} style={{ position: "absolute", top: "1.25rem", right: "1.25rem", background: "none", border: "none", cursor: "pointer", color: "#9b9b9b", display: "inline-flex", alignItems: "center" }} aria-label="Tutup"><X size={18} /></button>
 
             <div style={{ marginBottom: "1.75rem" }}>
               <div style={{ width: "48px", height: "48px", backgroundColor: "#eaf4f0", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
@@ -370,7 +370,7 @@ export default function LoginPage() {
         <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.55)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
           onClick={(e) => { if (e.target === e.currentTarget) { setModal(null); setFuEmail(""); setFuResult(null); } }}>
           <div style={{ backgroundColor: "white", borderRadius: "20px", width: "100%", maxWidth: "480px", padding: "2.5rem", position: "relative" }}>
-            <button onClick={() => { setModal(null); setFuEmail(""); setFuResult(null); }} style={{ position: "absolute", top: "1.25rem", right: "1.25rem", background: "none", border: "none", cursor: "pointer", color: "#9b9b9b" }}>✕</button>
+            <button onClick={() => { setModal(null); setFuEmail(""); setFuResult(null); }} style={{ position: "absolute", top: "1.25rem", right: "1.25rem", background: "none", border: "none", cursor: "pointer", color: "#9b9b9b", display: "inline-flex", alignItems: "center" }} aria-label="Tutup"><X size={18} /></button>
             <div style={{ marginBottom: "1.75rem" }}>
               <div style={{ width: "48px", height: "48px", backgroundColor: "#f0ede6", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
                 <User size={22} color="#2D2D2D" />

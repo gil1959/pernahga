@@ -24,8 +24,8 @@ export default function UserSidebar() {
     { href: "/dashboard", label: "Overview", icon: <LayoutDashboard size={20} /> },
     { href: "/dashboard/usage", label: "Usage", icon: <Activity size={20} /> },
     { href: "/dashboard/billing", label: "Paket & Billing", icon: <Crown size={20} /> },
-    { href: "/dashboard/consultations", label: t("consultations"), icon: <MessageCircle size={20} /> },
-    { href: "/dashboard/saved", label: t("saved"), icon: <Bookmark size={20} /> },
+    { href: "/dashboard/saved", label: "Aktivitas", icon: <Bookmark size={20} /> },
+    { href: "/dashboard/consultations", label: "Pusat Bantuan", icon: <MessageCircle size={20} /> },
     { href: "/dashboard/profile", label: t("profile"), icon: <User size={20} /> },
   ];
 
