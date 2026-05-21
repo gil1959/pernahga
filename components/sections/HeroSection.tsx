@@ -3,12 +3,11 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { MessageCircle, ArrowRight, Users, FolderOpen, Star, Zap } from "lucide-react";
+import { ArrowRight, Clock, Zap, ShieldCheck, Power, Bot, Send, CalendarCheck } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 
 export default function HeroSection({ settings }: { settings: Record<string, string> }) {
   const t = useTranslations("hero");
-  const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || settings.whatsappNumber || "628xxxxxxxxxx";
   const locale = typeof window !== "undefined"
     ? document.cookie.split("; ").find(r => r.startsWith("locale="))?.split("=")[1] || "id"
     : "id";
@@ -16,14 +15,11 @@ export default function HeroSection({ settings }: { settings: Record<string, str
   const heroTitle = locale === "en" ? settings.heroTitleEn : settings.heroTitle;
   const heroSubtitle = locale === "en" ? settings.heroSubtitleEn : settings.heroSubtitle;
 
-  const waMessage = "Halo Pernahga! Saya ingin konsultasi mengenai kebutuhan teknologi bisnis saya.";
-  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
-
   const stats = [
-    { icon: <Users size={20} />, value: "50+", label: t("stats.clients") },
-    { icon: <FolderOpen size={20} />, value: "80+", label: t("stats.projects") },
-    { icon: <Star size={20} />, value: "3+", label: t("stats.years") },
-    { icon: <Zap size={20} />, value: "100%", label: t("stats.free") },
+    { icon: <Clock size={20} />, value: "20+", label: t("stats.clients") },
+    { icon: <Zap size={20} />, value: "5 menit", label: t("stats.projects") },
+    { icon: <ShieldCheck size={20} />, value: "3 hari", label: t("stats.years") },
+    { icon: <Power size={20} />, value: "24/7", label: t("stats.free") },
   ];
 
   return (
@@ -101,9 +97,9 @@ export default function HeroSection({ settings }: { settings: Record<string, str
                 color: "#2D2D2D",
               }}
               dangerouslySetInnerHTML={{
-                __html: (heroTitle || "Bingung Butuh Software Apa?\nKami Bantu Carikan Solusinya")
+                __html: (heroTitle || "Hemat 20+ Jam Per Minggu\nTanpa Hire Admin Baru")
                   .replace(/\n/g, '<br/>')
-                  .replace(/(Kami Bantu|We Help)/g, '<span style="color:#8DA399">$1</span>')
+                  .replace(/(Tanpa Hire Admin Baru|Without Hiring New Admin)/g, '<span style="color:#8DA399">$1</span>')
               }}
             />
 
@@ -119,7 +115,7 @@ export default function HeroSection({ settings }: { settings: Record<string, str
                 maxWidth: "480px",
               }}
             >
-              {heroSubtitle || "Konsultasi gratis, solusi tepat. Pernahga hadir untuk membantu bisnis Anda berkembang dengan teknologi yang tepat."}
+              {heroSubtitle || "Pega adalah AI asisten managed yang menangani DM customer, posting medsos, dan operasional harian. Anda fokus ke kerja yang bernilai tinggi."}
             </motion.p>
 
             <motion.div
@@ -128,17 +124,15 @@ export default function HeroSection({ settings }: { settings: Record<string, str
               transition={{ duration: 0.6, delay: 0.3 }}
               style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "3rem" }}
             >
-              <a
-                href={waUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/register"
                 className="btn-primary"
                 style={{ fontSize: "1rem" }}
               >
-                <MessageCircle size={18} />
+                <Zap size={18} />
                 {t("cta_primary")}
-              </a>
-              <Link href="/showcase" className="btn-secondary" style={{ fontSize: "1rem" }}>
+              </Link>
+              <Link href="#how-it-works" className="btn-secondary" style={{ fontSize: "1rem" }}>
                 {t("cta_secondary")}
                 <ArrowRight size={18} />
               </Link>
@@ -207,13 +201,17 @@ export default function HeroSection({ settings }: { settings: Record<string, str
               >
                 <Logo size={100} />
                 <div style={{ textAlign: "center" }}>
-                  <p style={{ fontSize: "1.2rem", fontWeight: 700, color: "#2D2D2D" }}>Pernahga</p>
-                  <p style={{ fontSize: "0.85rem", color: "#8DA399", fontWeight: 500 }}>Tech Consultation</p>
+                  <p style={{ fontSize: "1.2rem", fontWeight: 700, color: "#2D2D2D" }}>Pega</p>
+                  <p style={{ fontSize: "0.85rem", color: "#8DA399", fontWeight: 500 }}>AI Asisten Managed</p>
                 </div>
 
-                {/* Consultation process visual */}
+                {/* What Pega does visual */}
                 <div style={{ width: "100%" }}>
-                  {["Analisis kebutuhan bisnis", "Rekomendasi solusi", "Implementasi tepat sasaran"].map((step, i) => (
+                  {[
+                    { icon: <Bot size={14} />, text: "Balas DM customer otomatis" },
+                    { icon: <Send size={14} />, text: "Posting konten medsos terjadwal" },
+                    { icon: <CalendarCheck size={14} />, text: "Laporan harian via WhatsApp" },
+                  ].map((step, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, x: -10 }}
@@ -233,27 +231,25 @@ export default function HeroSection({ settings }: { settings: Record<string, str
                         style={{
                           width: "28px",
                           height: "28px",
-                          borderRadius: "50%",
+                          borderRadius: "8px",
                           backgroundColor: "#8DA399",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           color: "white",
-                          fontSize: "0.75rem",
-                          fontWeight: 700,
                           flexShrink: 0,
                         }}
                       >
-                        {i + 1}
+                        {step.icon}
                       </div>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "#2D2D2D" }}>{step}</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "#2D2D2D" }}>{step.text}</span>
                     </motion.div>
                   ))}
                 </div>
 
                 <div style={{ width: "100%", padding: "0.85rem 1rem", backgroundColor: "#2D2D2D", borderRadius: "12px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <MessageCircle size={18} color="#8DA399" />
-                  <span style={{ color: "#F4F1EA", fontSize: "0.85rem", fontWeight: 600 }}>Konsultasi Gratis Sekarang</span>
+                  <Zap size={18} color="#8DA399" />
+                  <span style={{ color: "#F4F1EA", fontSize: "0.85rem", fontWeight: 600 }}>Aktif 24/7 untuk akun Anda</span>
                 </div>
               </motion.div>
 
@@ -271,8 +267,8 @@ export default function HeroSection({ settings }: { settings: Record<string, str
                   boxShadow: "0 10px 30px rgba(141,163,153,0.3)",
                 }}
               >
-                <p style={{ color: "white", fontSize: "0.75rem", fontWeight: 700 }}>100% Gratis</p>
-                <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.7rem" }}>Konsultasi Pertama</p>
+                <p style={{ color: "white", fontSize: "0.75rem", fontWeight: 700 }}>3 Hari Gratis</p>
+                <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.7rem" }}>Tanpa kartu kredit</p>
               </motion.div>
 
               <motion.div
@@ -288,8 +284,8 @@ export default function HeroSection({ settings }: { settings: Record<string, str
                   boxShadow: "0 10px 30px rgba(45,45,45,0.2)",
                 }}
               >
-                <p style={{ color: "#F4F1EA", fontSize: "0.75rem", fontWeight: 700 }}>50+ Klien</p>
-                <p style={{ color: "rgba(244,241,234,0.6)", fontSize: "0.7rem" }}>Puas dengan solusi kami</p>
+                <p style={{ color: "#F4F1EA", fontSize: "0.75rem", fontWeight: 700 }}>20+ Jam</p>
+                <p style={{ color: "rgba(244,241,234,0.6)", fontSize: "0.7rem" }}>Hemat per minggu</p>
               </motion.div>
             </div>
           </motion.div>

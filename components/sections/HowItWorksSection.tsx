@@ -4,21 +4,21 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
-import { MessageCircle, BarChart2, Wrench } from "lucide-react";
+import { UserPlus, Plug, Activity } from "lucide-react";
 
 const steps = [
   {
-    icon: <MessageCircle size={28} />,
+    icon: <UserPlus size={28} />,
     number: "01",
     key: "step1",
   },
   {
-    icon: <BarChart2 size={28} />,
+    icon: <Plug size={28} />,
     number: "02",
     key: "step2",
   },
   {
-    icon: <Wrench size={28} />,
+    icon: <Activity size={28} />,
     number: "03",
     key: "step3",
   },
@@ -31,6 +31,7 @@ export default function HowItWorksSection() {
 
   return (
     <section
+      id="how-it-works"
       ref={ref}
       className="section-padding"
       style={{ backgroundColor: "#2D2D2D", overflow: "hidden" }}

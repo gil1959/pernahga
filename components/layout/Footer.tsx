@@ -4,6 +4,15 @@ import Logo from "@/components/ui/Logo";
 import { Instagram, Youtube, MessageCircle, Mail, Phone, MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
+// TikTok SVG icon (defined outside component for stability)
+function TiktokIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+    </svg>
+  );
+}
+
 export default async function Footer() {
   const t = await getTranslations("footer");
   const tNav = await getTranslations("nav");
@@ -25,13 +34,6 @@ export default async function Footer() {
   const igUrl = settingsMap.instagramUrl || "#";
   const ttUrl = settingsMap.tiktokUrl || "#";
   const ytUrl = settingsMap.youtubeUrl || "#";
-
-  // Tiktok SVG icon
-  const TiktokIcon = ({ size = 18 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
-    </svg>
-  );
 
   return (
     <footer
@@ -57,7 +59,7 @@ export default async function Footer() {
             <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", marginBottom: "1rem" }}>
               <Logo size={36} />
               <span style={{ fontWeight: 800, fontSize: "1.3rem", color: "#F4F1EA", letterSpacing: "-0.02em" }}>
-                Pernahga
+                PernahGa
               </span>
             </Link>
             <p style={{ fontSize: "0.9rem", color: "rgba(244,241,234,0.6)", lineHeight: 1.7, marginBottom: "1.5rem" }}>
@@ -95,17 +97,17 @@ export default async function Footer() {
             </div>
           </div>
 
-          {/* Layanan */}
+          {/* Produk */}
           <div>
             <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "#8DA399", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "1.25rem" }}>
               {t("links_product")}
             </h3>
             <ul style={{ listStyle: "none" }}>
               {[
-                { href: "/services", label: tNav("services") },
+                { href: "/#how-it-works", label: t("how_it_works") },
+                { href: "/#pricing", label: t("pricing") },
+                { href: "/register", label: tNav("consultation") },
                 { href: "/showcase", label: tNav("showcase") },
-                { href: "/education", label: tNav("education") },
-                { href: "/contact", label: tNav("consultation") },
               ].map((link) => (
                 <li key={link.href} style={{ marginBottom: "0.6rem" }}>
                   <Link
@@ -203,12 +205,10 @@ export default async function Footer() {
           }}
         >
           <p style={{ fontSize: "0.85rem", color: "rgba(244,241,234,0.4)" }}>
-            © {currentYear} Pernahga. Hak cipta dilindungi.
+            © {currentYear} PernahGa. Hak cipta dilindungi.
           </p>
           <p style={{ fontSize: "0.85rem", color: "rgba(244,241,234,0.4)" }}>
-            Dibuat dengan{" "}
-            <span style={{ color: "#8DA399" }}>♥</span>
-            {" "}untuk bisnis Indonesia
+            Dibuat untuk profesional Indonesia
           </p>
         </div>
       </div>

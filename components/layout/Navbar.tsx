@@ -26,11 +26,12 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    // Read locale from cookie
+    // Read locale from cookie on client mount
     const locale = document.cookie
       .split("; ")
       .find((row) => row.startsWith("locale="))
       ?.split("=")[1] || "id";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentLocale(locale);
   }, []);
 
@@ -224,7 +225,7 @@ export default function Navbar() {
                 <Link href="/login" className="btn-secondary" style={{ padding: "0.5rem 1.25rem", fontSize: "0.9rem" }}>
                   {t("login")}
                 </Link>
-                <Link href="/contact" className="btn-primary" style={{ padding: "0.5rem 1.25rem", fontSize: "0.9rem" }}>
+                <Link href="/register" className="btn-primary" style={{ padding: "0.5rem 1.25rem", fontSize: "0.9rem" }}>
                   {t("consultation")}
                 </Link>
               </>
@@ -302,7 +303,7 @@ export default function Navbar() {
                 <Link href="/login" onClick={() => setIsMenuOpen(false)} className="btn-secondary" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
                   {t("login")}
                 </Link>
-                <Link href="/contact" onClick={() => setIsMenuOpen(false)} className="btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
+                <Link href="/register" onClick={() => setIsMenuOpen(false)} className="btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
                   {t("consultation")}
                 </Link>
               </>

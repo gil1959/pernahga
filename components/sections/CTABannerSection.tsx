@@ -3,15 +3,13 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
-import { MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { Zap, ArrowRight } from "lucide-react";
 
-export default function CTABannerSection({ whatsappNumber }: { whatsappNumber: string }) {
+export default function CTABannerSection({}: { whatsappNumber: string }) {
   const t = useTranslations("cta");
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
-
-  const waMessage = "Halo Pernahga! Saya ingin konsultasi mengenai kebutuhan teknologi bisnis saya.";
-  const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waMessage)}`;
 
   return (
     <section
@@ -85,37 +83,58 @@ export default function CTABannerSection({ whatsappNumber }: { whatsappNumber: s
               {t("subtitle")}
             </p>
 
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.75rem",
-                padding: "1rem 2.5rem",
-                backgroundColor: "#2D2D2D",
-                color: "#F4F1EA",
-                borderRadius: "50px",
-                fontWeight: 700,
-                fontSize: "1rem",
-                textDecoration: "none",
-                transition: "all 0.3s ease",
-                fontFamily: "Plus Jakarta Sans, sans-serif",
-                boxShadow: "0 8px 30px rgba(45,45,45,0.3)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(45,45,45,0.4)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px rgba(45,45,45,0.3)";
-              }}
-            >
-              <MessageCircle size={20} />
-              {t("button")}
-            </a>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+              <Link
+                href="/register"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "1rem 2.25rem",
+                  backgroundColor: "#2D2D2D",
+                  color: "#F4F1EA",
+                  borderRadius: "50px",
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  textDecoration: "none",
+                  transition: "all 0.3s ease",
+                  fontFamily: "Plus Jakarta Sans, sans-serif",
+                  boxShadow: "0 8px 30px rgba(45,45,45,0.3)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(45,45,45,0.4)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px rgba(45,45,45,0.3)";
+                }}
+              >
+                <Zap size={20} />
+                {t("button")}
+              </Link>
+              <Link
+                href="#how-it-works"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "1rem 1.75rem",
+                  backgroundColor: "transparent",
+                  color: "white",
+                  border: "2px solid rgba(255,255,255,0.5)",
+                  borderRadius: "50px",
+                  fontWeight: 600,
+                  fontSize: "1rem",
+                  textDecoration: "none",
+                  fontFamily: "Plus Jakarta Sans, sans-serif",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                {t("button_secondary")}
+                <ArrowRight size={18} />
+              </Link>
+            </div>
 
             <p style={{ marginTop: "1rem", color: "rgba(255,255,255,0.6)", fontSize: "0.85rem" }}>
               {t("note")}

@@ -10,40 +10,41 @@
     "dashboard": "Dashboard",
     "admin": "Admin Panel",
     "logout": "Keluar",
-    "consultation": "Konsultasi Gratis"
+    "consultation": "Coba Gratis 3 Hari",
+    "pricing": "Harga"
   },
   "hero": {
-    "badge": "Konsultasi Teknologi #1 untuk Bisnis Anda",
-    "cta_primary": "Konsultasi Gratis via WA",
-    "cta_secondary": "Lihat Portofolio",
+    "badge": "AI Asisten Managed untuk Solo Professional",
+    "cta_primary": "Coba Gratis 3 Hari",
+    "cta_secondary": "Lihat Cara Kerja",
     "stats": {
-      "clients": "Klien Puas",
-      "projects": "Proyek Selesai",
-      "years": "Tahun Pengalaman",
-      "free": "Konsultasi Pertama"
+      "clients": "Jam Dihemat / Minggu",
+      "projects": "Setup Awal",
+      "years": "Tanpa Kartu Kredit",
+      "free": "Aktif Non-Stop"
     }
   },
   "howItWorks": {
-    "title": "Bagaimana Cara Kerjanya?",
-    "subtitle": "Tiga langkah sederhana menuju solusi teknologi yang tepat untuk bisnis Anda",
-    "step1_title": "Konsultasi Gratis",
-    "step1_desc": "Ceritakan tantangan bisnis Anda. Kami dengarkan tanpa biaya apapun.",
-    "step2_title": "Analisis & Rekomendasi",
-    "step2_desc": "Tim ahli kami menganalisis dan memberikan rekomendasi solusi terbaik.",
-    "step3_title": "Implementasi Solusi",
-    "step3_desc": "Kami bantu implementasi dan pastikan solusi berjalan sempurna untuk bisnis Anda."
+    "title": "Tiga Langkah Menuju Bebas Kerja Operasional",
+    "subtitle": "Cuma butuh 5 menit untuk setup. Setelahnya Pega ngerjain hampir semuanya buat Anda.",
+    "step1_title": "Daftar Trial 3 Hari",
+    "step1_desc": "Cukup verifikasi WhatsApp. Tanpa kartu kredit, tanpa komitmen, langsung dapat 200 kredit.",
+    "step2_title": "Hubungkan Channel & Atur Persona",
+    "step2_desc": "Sambungkan Instagram, WhatsApp, atau Telegram. Tetapkan tone, jam aktif, dan basis pengetahuan.",
+    "step3_title": "Pega Aktif & Lapor Harian",
+    "step3_desc": "Pega membalas DM, memposting konten, dan mengirim laporan harian otomatis ke WhatsApp Anda."
   },
   "services": {
-    "title": "Paket Layanan",
-    "subtitle": "Pilih paket yang sesuai dengan kebutuhan dan skala bisnis Anda",
+    "title": "Pilih Paket Sesuai Skala Anda",
+    "subtitle": "Mulai dari trial gratis sampai enterprise. Upgrade kapan saja, batalkan kapan saja, tanpa pertanyaan.",
     "popular": "Paling Populer",
     "cta": "Mulai Sekarang",
-    "cta_custom": "Hubungi Kami",
+    "cta_custom": "Hubungi Tim",
     "features": "Yang Anda Dapatkan"
   },
   "showcase": {
-    "title": "Portofolio Kami",
-    "subtitle": "Software yang pernah kami bangun untuk klien nyata dengan masalah nyata",
+    "title": "Pengalaman Tim di Balik Pega",
+    "subtitle": "PernahGa sudah membangun produk untuk skala UMKM hingga enterprise. Pega lahir dari pengalaman itu.",
     "viewAll": "Lihat Semua Proyek",
     "viewDetail": "Lihat Detail",
     "techStack": "Teknologi yang Digunakan",
@@ -58,25 +59,29 @@
   },
   "testimonials": {
     "title": "Apa Kata Klien Kami",
-    "subtitle": "Kepercayaan mereka adalah motivasi terbesar kami"
+    "subtitle": "Profesional dan bisnis yang sudah merasakan manfaatnya."
   },
   "cta": {
-    "title": "Siap Menemukan Solusi Teknologi yang Tepat?",
-    "subtitle": "Konsultasi pertama Anda sepenuhnya gratis. Tanpa komitmen, tanpa biaya tersembunyi.",
-    "button": "Mulai Konsultasi via WhatsApp",
-    "note": "Biasanya kami merespons dalam 1x24 jam"
+    "title": "Siap Bebas dari Kerja Operasional Harian?",
+    "subtitle": "Trial 3 hari sepenuhnya gratis. Tanpa kartu kredit, tanpa komitmen, batalkan kapan saja.",
+    "button": "Coba Gratis 3 Hari",
+    "button_secondary": "Pelajari Cara Kerja",
+    "note": "Cuma butuh verifikasi WhatsApp untuk mulai"
   },
   "footer": {
-    "tagline": "Solusi teknologi yang tepat untuk bisnis yang berkembang.",
-    "links_product": "Layanan",
+    "tagline": "AI asisten managed untuk solo professional yang ingin fokus ke kerja bernilai tinggi.",
+    "links_product": "Produk",
     "links_company": "Perusahaan",
     "links_legal": "Legal",
     "about": "Tentang Kami",
     "contact": "Kontak",
+    "pricing": "Harga",
+    "founding": "Founding Member",
+    "how_it_works": "Cara Kerja",
     "terms": "Syarat dan Ketentuan",
     "privacy": "Kebijakan Privasi",
     "refund": "Kebijakan Pengembalian",
-    "copyright": "© 2025 Pernahga. Hak cipta dilindungi."
+    "copyright": "© 2026 PernahGa. Hak cipta dilindungi."
   },
   "auth": {
     "login_title": "Selamat Datang Kembali",
