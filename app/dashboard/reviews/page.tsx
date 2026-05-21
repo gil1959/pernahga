@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
-import { Star, Loader2, MessageSquareQuote, Trash2, CheckCircle } from "lucide-react";
+import { Star, Loader2, MessageSquareQuote, Trash2, CheckCircle, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 interface MyReview {
@@ -79,7 +79,7 @@ export default function UserReviewPage() {
             <p style={{ fontWeight: 700, color: "#2D2D2D", fontSize: "0.9rem" }}>Ulasan berhasil dikirim!</p>
             <p style={{ fontSize: "0.82rem", color: "#6b6b6b" }}>Ulasan Anda sudah langsung tampil di halaman utama website.</p>
           </div>
-          <button onClick={() => setSubmitted(false)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#9b9b9b", fontSize: "1.1rem" }}>✕</button>
+          <button onClick={() => setSubmitted(false)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#9b9b9b", display: "inline-flex", alignItems: "center" }} aria-label="Tutup"><X size={18} /></button>
         </div>
       )}
 

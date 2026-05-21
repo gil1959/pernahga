@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { Loader2, Lock, CheckCircle2, MessageCircle, Send, Mail, Hash } from "lucide-react";
+import { Loader2, Lock, CheckCircle2, MessageCircle, Send, Mail, Hash, Calendar, Film, Newspaper, Webhook } from "lucide-react";
 
 export type CapabilityChannel =
   | "WHATSAPP" | "INSTAGRAM_DM" | "TELEGRAM" | "EMAIL" | "DISCORD"
@@ -30,11 +30,11 @@ const CAP_META: Record<CapabilityChannel, {
   TWITTER_POST: { label: "Auto-Post X/Twitter", desc: "Post X/Twitter terjadwal", minPlan: "Pro", iconBg: "#000000", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 14 }}>X</span> },
   TIKTOK_POST: { label: "Auto-Post TikTok", desc: "Post TikTok terjadwal", minPlan: "Business", iconBg: "#000000", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>TT</span> },
   PINTEREST_POST: { label: "Auto-Post Pinterest", desc: "Pin Pinterest terjadwal", minPlan: "Business", iconBg: "#E60023", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 12 }}>P</span> },
-  BOOKING_CALENDAR: { label: "Booking Calendar", desc: "Google Calendar / Cal.com", minPlan: "Pro", iconBg: "#3b82f6", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>📆</span> },
+  BOOKING_CALENDAR: { label: "Booking Calendar", desc: "Google Calendar / Cal.com", minPlan: "Pro", iconBg: "#3b82f6", icon: <Calendar size={18} color="white" /> },
   IMAGE_GEN: { label: "Image Generation", desc: "AI image untuk konten", minPlan: "Pro", iconBg: "#a855f7", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>AI</span> },
-  VIDEO_SCRIPT: { label: "Video Script", desc: "Storyboard + script otomatis", minPlan: "Business", iconBg: "#ec4899", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>🎬</span> },
-  DAILY_NEWS_BRIEFING: { label: "Briefing Berita Harian", desc: "Update industri tiap pagi", minPlan: "Pro", iconBg: "#f59e0b", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>📰</span> },
-  WEBHOOK_INTEGRATION: { label: "Webhook Integration", desc: "CRM / ERP / Notion", minPlan: "Business", iconBg: "#06b6d4", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>🔗</span> },
+  VIDEO_SCRIPT: { label: "Video Script", desc: "Storyboard + script otomatis", minPlan: "Business", iconBg: "#ec4899", icon: <Film size={18} color="white" /> },
+  DAILY_NEWS_BRIEFING: { label: "Briefing Berita Harian", desc: "Update industri tiap pagi", minPlan: "Pro", iconBg: "#f59e0b", icon: <Newspaper size={18} color="white" /> },
+  WEBHOOK_INTEGRATION: { label: "Webhook Integration", desc: "CRM / ERP / Notion", minPlan: "Business", iconBg: "#06b6d4", icon: <Webhook size={18} color="white" /> },
   WHITE_LABEL: { label: "White-Label", desc: "Brand sebagai milik Anda", minPlan: "Enterprise", iconBg: "#64748b", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>WL</span> },
 };
 
