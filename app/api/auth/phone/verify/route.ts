@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { normalizePhone } from "@/lib/wa-fonnte";
+import { getClientIp, ipAllowedForRegistration, recordRegisteredIp } from "@/lib/request-ip";
+import { provisionTrial } from "@/lib/trial";
 
 /**
  * POST /api/auth/phone/verify
@@ -20,7 +22,7 @@ export async function POST(req: Request) {
     try {
       phone = normalizePhone(body.phone || "");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Nomor WhatsApp tidak valid";
+      const msg = e instanceof Error ? e.message : "Nomor HP tidak valid";
       return NextResponse.json({ message: msg }, { status: 400 });
     }
 
@@ -57,16 +59,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Kode OTP sudah kedaluwarsa" }, { status: 400 });
     }
 
+    // For Google-OAuth-created users that haven't claimed an IP yet, the
+    // dedup check runs here (the credentials register flow handles it in
+    // /api/auth/register). Admin accounts are exempt to keep ops unblocked.
+    const ip = getClientIp(req.headers);
+    if (user.role !== "ADMIN" && !user.registrationIp) {
+      const ipCheck = await ipAllowedForRegistration(ip);
+      if (!ipCheck.allowed) {
+        return NextResponse.json({ message: ipCheck.reason }, { status: 409 });
+      }
+    }
+
     // Atomic update + cleanup.
     await prisma.$transaction([
       prisma.user.update({
         where: { id: user.id },
-        data: { phoneVerified: new Date() },
+        data: {
+          phoneVerified: new Date(),
+          ...(user.registrationIp ? {} : { registrationIp: ip || undefined }),
+        },
       }),
       prisma.otpToken.delete({
         where: { identifier_type: { identifier: phone, type: "phone_verify" } },
       }),
     ]);
+
+    // Best-effort: claim IP and provision trial for newly-verified users.
+    if (!user.registrationIp) {
+      try {
+        await recordRegisteredIp(ip, user.id);
+      } catch (e) {
+        console.error("recordRegisteredIp failed:", e);
+      }
+    }
+    try {
+      await provisionTrial(user.id);
+    } catch (e) {
+      console.error("provisionTrial failed:", e);
+    }
 
     return NextResponse.json({ message: "Nomor berhasil diverifikasi" });
   } catch (error: unknown) {

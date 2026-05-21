@@ -50,14 +50,14 @@ async function getFonnteConfig(): Promise<{ token: string; enabled: boolean }> {
  * Throws if the result doesn't look like a valid Indonesian mobile number.
  */
 export function normalizePhone(input: string): string {
-  if (!input) throw new Error("Nomor WhatsApp tidak boleh kosong");
+  if (!input) throw new Error("Nomor HP tidak boleh kosong");
   let p = input.replace(/[^\d+]/g, "");
   if (p.startsWith("+")) p = p.slice(1);
   if (p.startsWith("0")) p = "62" + p.slice(1);
   if (!p.startsWith("62")) p = "62" + p;
   // Indonesian mobile: starts with 628, total length 11-15
   if (!/^628\d{8,12}$/.test(p)) {
-    throw new Error("Nomor WhatsApp Indonesia tidak valid");
+    throw new Error("Nomor HP Indonesia tidak valid");
   }
   return p;
 }
@@ -118,7 +118,7 @@ export async function sendWhatsApp(
 export async function sendPhoneOtp(target: string, otp: string): Promise<void> {
   const message =
     `*Pernahga*\n\n` +
-    `Kode verifikasi Anda:\n` +
+    `Kode verifikasi nomor HP Anda:\n` +
     `*${otp}*\n\n` +
     `Berlaku 10 menit. Jangan bagikan kode ini ke siapapun.\n` +
     `Jika Anda tidak meminta kode ini, abaikan saja pesan ini.`;
