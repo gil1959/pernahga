@@ -38,7 +38,7 @@ export default function RegisterPage() {
       return;
     }
     if (!formData.phone || formData.phone.replace(/\D/g, "").length < 10) {
-      toast.error("Nomor WhatsApp minimal 10 digit");
+      toast.error("Nomor HP minimal 10 digit");
       return;
     }
     if (!formData.password || formData.password.length < 8) {
@@ -64,7 +64,7 @@ export default function RegisterPage() {
 
       setMaskedPhone(data.phone || "");
       setOtpSent(true);
-      toast.success("Kode OTP telah dikirim ke WhatsApp Anda");
+      toast.success("Kode OTP telah dikirim ke nomor HP Anda");
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Terjadi kesalahan";
       toast.error(msg);
@@ -153,7 +153,7 @@ export default function RegisterPage() {
             Bergabung bersama solusi tepat.
           </h1>
           <p style={{ color: "rgba(244,241,234,0.9)", fontSize: "1.1rem", lineHeight: 1.6 }}>
-            Buat akun sekarang. Verifikasi cukup lewat WhatsApp, tanpa ribet.
+            Buat akun sekarang. Verifikasi cukup lewat nomor HP, tanpa ribet.
           </p>
         </div>
 
@@ -184,7 +184,7 @@ export default function RegisterPage() {
           </h2>
           <p style={{ color: "#6b6b6b", marginBottom: "2.5rem" }}>
             {otpSent
-              ? `Masukkan 6 digit OTP yang kami kirim ke WhatsApp ${maskedPhone}`
+              ? `Masukkan 6 digit OTP yang kami kirim ke nomor HP ${maskedPhone}`
               : t("register_subtitle")}
           </p>
 
@@ -228,7 +228,7 @@ export default function RegisterPage() {
 
                 <div>
                   <label htmlFor="phone" style={labelBase}>
-                    Nomor WhatsApp
+                    Nomor HP
                   </label>
                   <input
                     id="phone"
@@ -243,7 +243,7 @@ export default function RegisterPage() {
                     disabled={isSendingOtp}
                   />
                   <p style={{ fontSize: "0.75rem", color: "#8b8b8b", marginTop: "0.4rem" }}>
-                    Kode OTP akan dikirim ke nomor WhatsApp ini
+                    Pakai nomor HP aktif yang terhubung WhatsApp — OTP dikirim ke sini
                   </p>
                 </div>
 

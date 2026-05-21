@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     try {
       phone = normalizePhone(body.phone || "");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Nomor WhatsApp tidak valid";
+      const msg = e instanceof Error ? e.message : "Nomor HP tidak valid";
       return NextResponse.json({ message: msg }, { status: 400 });
     }
 
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 
     if (emailUser && phoneUser) {
       return NextResponse.json(
-        { message: "Email dan nomor WhatsApp sudah terdaftar. Silakan login." },
+        { message: "Email dan nomor HP sudah terdaftar. Silakan login." },
         { status: 409 }
       );
     }
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     }
     if (phoneUser) {
       return NextResponse.json(
-        { message: "Nomor WhatsApp sudah terdaftar. Silakan login atau gunakan nomor lain." },
+        { message: "Nomor HP sudah terdaftar. Silakan login atau gunakan nomor lain." },
         { status: 409 }
       );
     }
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     try {
       await sendPhoneOtp(phone, otp);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Gagal mengirim OTP WhatsApp";
+      const msg = e instanceof Error ? e.message : "Gagal mengirim OTP";
       if (!reuse) {
         await prisma.otpToken.deleteMany({
           where: { identifier: phone, type: "phone_register" },
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      message: "Kode OTP telah dikirim ke WhatsApp Anda",
+      message: "Kode OTP telah dikirim ke nomor HP Anda",
       phone: phone.replace(/^(\d{2})(\d+)(\d{3})$/, "$1***$3"),
     });
   } catch (error: unknown) {

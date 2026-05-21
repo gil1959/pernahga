@@ -30,7 +30,7 @@ export default function VerifyPhonePage() {
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!phone || phone.replace(/\D/g, "").length < 10) {
-      toast.error("Nomor WhatsApp minimal 10 digit");
+      toast.error("Nomor HP minimal 10 digit");
       return;
     }
     setIsSending(true);
@@ -44,7 +44,7 @@ export default function VerifyPhonePage() {
       if (!res.ok) throw new Error(data.message || "Gagal mengirim OTP");
       setMaskedPhone(data.phone || "");
       setStep("otp");
-      toast.success("Kode OTP telah dikirim ke WhatsApp Anda");
+      toast.success("Kode OTP telah dikirim ke nomor HP Anda");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan";
       toast.error(msg);
@@ -118,11 +118,11 @@ export default function VerifyPhonePage() {
         </div>
 
         <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "#2D2D2D", marginBottom: "0.5rem" }}>
-          Verifikasi Nomor WhatsApp
+          Verifikasi Nomor HP
         </h1>
         <p style={{ color: "#6b6b6b", marginBottom: "2rem", fontSize: "0.95rem" }}>
           {step === "phone"
-            ? "Untuk keamanan akun, verifikasi nomor WhatsApp Anda sekali saja sebelum lanjut."
+            ? "Untuk keamanan akun, verifikasi nomor HP Anda sekali saja sebelum lanjut."
             : `Masukkan 6 digit OTP yang kami kirim ke ${maskedPhone}`}
         </p>
 
@@ -130,7 +130,7 @@ export default function VerifyPhonePage() {
           <form onSubmit={handleSend} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <div>
               <label htmlFor="phone" style={labelBase}>
-                Nomor WhatsApp aktif
+                Nomor HP aktif (terhubung WhatsApp)
               </label>
               <input
                 id="phone"
@@ -144,7 +144,7 @@ export default function VerifyPhonePage() {
                 disabled={isSending}
               />
               <p style={{ fontSize: "0.75rem", color: "#8b8b8b", marginTop: "0.4rem" }}>
-                Kami hanya kirim 1 OTP. Pastikan nomor ini bisa terima WA.
+                Kami hanya kirim 1 OTP. Pastikan nomor HP ini aktif menerima WhatsApp.
               </p>
             </div>
             <button
@@ -168,7 +168,7 @@ export default function VerifyPhonePage() {
               }}
             >
               {isSending && <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />}
-              {isSending ? "Mengirim OTP..." : "Kirim OTP ke WhatsApp"}
+              {isSending ? "Mengirim OTP..." : "Kirim OTP ke Nomor HP"}
             </button>
           </form>
         ) : (
@@ -224,7 +224,7 @@ export default function VerifyPhonePage() {
                 padding: 0,
               }}
             >
-              Ubah nomor WhatsApp
+              Ubah nomor HP
             </button>
 
             <button

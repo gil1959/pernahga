@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     try {
       phone = normalizePhone(body.phone || "");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Nomor WhatsApp tidak valid";
+      const msg = e instanceof Error ? e.message : "Nomor HP tidak valid";
       return NextResponse.json({ message: msg }, { status: 400 });
     }
 
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       const existing = await prisma.user.findUnique({ where: { phone } });
       if (existing) {
         return NextResponse.json(
-          { message: "Nomor WhatsApp sudah terdaftar. Silakan login atau gunakan nomor lain." },
+          { message: "Nomor HP sudah terdaftar. Silakan login atau gunakan nomor lain." },
           { status: 409 }
         );
       }
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
         const conflict = await prisma.user.findUnique({ where: { phone } });
         if (conflict) {
           return NextResponse.json(
-            { message: "Nomor WhatsApp sudah terdaftar di akun lain" },
+            { message: "Nomor HP sudah terdaftar di akun lain" },
             { status: 409 }
           );
         }
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
         const conflict = await prisma.user.findUnique({ where: { phone } });
         if (conflict) {
           return NextResponse.json(
-            { message: "Nomor WhatsApp sudah terdaftar di akun lain" },
+            { message: "Nomor HP sudah terdaftar di akun lain" },
             { status: 409 }
           );
         }
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     try {
       await sendPhoneOtp(phone, otp);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Gagal mengirim OTP WhatsApp";
+      const msg = e instanceof Error ? e.message : "Gagal mengirim OTP";
       // Roll back: delete unsent token so user bisa retry.
       if (!reuseExisting) {
         await prisma.otpToken.deleteMany({
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      message: "Kode OTP telah dikirim ke WhatsApp Anda",
+      message: "Kode OTP telah dikirim ke nomor HP Anda",
       // Echo masked phone so the UI can show "OTP dikirim ke *****890"
       phone: phone.replace(/^(\d{2})(\d+)(\d{3})$/, "$1***$3"),
     });

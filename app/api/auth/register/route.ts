@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { normalizePhone } from "@/lib/wa-fonnte";
 import { getClientIp, ipAllowedForRegistration, recordRegisteredIp } from "@/lib/request-ip";
-import { PLAN_CAPABILITIES, PLAN_CREDITS, isPlanKey } from "@/lib/plans";
+import { provisionTrial } from "@/lib/trial";
 
 /**
  * POST /api/auth/register
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     try {
       phone = normalizePhone(body.phone || "");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Nomor WhatsApp tidak valid";
+      const msg = e instanceof Error ? e.message : "Nomor HP tidak valid";
       return NextResponse.json({ message: msg }, { status: 400 });
     }
 
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Email sudah terdaftar" }, { status: 409 });
     }
     if (phoneUser) {
-      return NextResponse.json({ message: "Nomor WhatsApp sudah terdaftar" }, { status: 409 });
+      return NextResponse.json({ message: "Nomor HP sudah terdaftar" }, { status: 409 });
     }
 
     const record = await prisma.otpToken.findUnique({
@@ -96,39 +96,9 @@ export async function POST(req: Request) {
       return u;
     });
 
-    // Provision Trial subscription if a Trial package exists.
+    // Provision Trial subscription + capabilities (idempotent helper).
     try {
-      const trialPkg = await prisma.package.findFirst({
-        where: { title: "Trial", isActive: true },
-      });
-      if (trialPkg && isPlanKey("Trial")) {
-        const cfg = PLAN_CREDITS.Trial;
-        const trialEnd = new Date(Date.now() + (cfg.trialDays || 3) * 24 * 60 * 60 * 1000);
-        await prisma.subscription.create({
-          data: {
-            userId: user.id,
-            packageId: trialPkg.id,
-            status: "TRIAL",
-            startsAt: new Date(),
-            endsAt: trialEnd,
-            trialEndsAt: trialEnd,
-            creditsTotal: cfg.monthly,
-            creditsUsed: 0,
-            paymentMethod: "trial",
-          },
-        });
-        // Provision capability rows (granted by plan, enabled by default for Trial).
-        const caps = PLAN_CAPABILITIES.Trial;
-        await prisma.userCapability.createMany({
-          data: caps.map((c) => ({
-            userId: user.id,
-            channel: c,
-            enabled: true,
-            grantedByPlan: true,
-          })),
-          skipDuplicates: true,
-        });
-      }
+      await provisionTrial(user.id);
     } catch (e) {
       // Non-fatal: user can still log in; admin can fix subscription manually.
       console.error("Failed to provision trial subscription:", e);
