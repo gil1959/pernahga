@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Zap, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { Check, Zap, ArrowRight, Star } from "lucide-react";
 
 interface Package {
   id: string;
@@ -36,8 +37,13 @@ export default function PackagesSection({
     return document.cookie.split("; ").find(r => r.startsWith("locale="))?.split("=")[1] || "id";
   };
 
+  const isFoundingPackage = (pkg: Package) => {
+    const note = `${pkg.priceNote || ""} ${pkg.priceNoteEn || ""}`.toLowerCase();
+    return note.includes("founding");
+  };
+
   return (
-    <section ref={ref} className="section-padding" style={{ backgroundColor: "#F4F1EA" }}>
+    <section id="pricing" ref={ref} className="section-padding" style={{ backgroundColor: "#F4F1EA" }}>
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -75,8 +81,11 @@ export default function PackagesSection({
             );
             const lowerPrice = pkg.price.toLowerCase();
             const isCustom = lowerPrice === "custom" || lowerPrice === "gratis" || lowerPrice === "free";
-            const waMessage = `Halo Pernahga! Saya tertarik dengan paket ${pkg.title}. Bisa ceritakan lebih lanjut?`;
-            const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waMessage)}`;
+            const isFounding = isFoundingPackage(pkg);
+            const ctaHref = isCustom && (lowerPrice === "custom")
+              ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Halo PernahGa! Saya tertarik paket ${pkg.title} (Enterprise) dan ingin diskusi lebih lanjut.`)}`
+              : "/register";
+            const ctaTarget = isCustom && (lowerPrice === "custom") ? "_blank" : undefined;
 
             const formatPrice = (priceStr: string) => {
               const lower = priceStr.toLowerCase();
@@ -127,6 +136,30 @@ export default function PackagesSection({
                     }}
                   >
                     {t("popular")}
+                  </div>
+                )}
+
+                {isFounding && !pkg.isPopular && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "-14px",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      backgroundColor: "#2D2D2D",
+                      color: "#F4F1EA",
+                      padding: "0.3rem 1.25rem",
+                      borderRadius: "50px",
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                      whiteSpace: "nowrap",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.35rem",
+                    }}
+                  >
+                    <Star size={12} fill="#8DA399" stroke="#8DA399" />
+                    Founding Member
                   </div>
                 )}
 
@@ -198,39 +231,73 @@ export default function PackagesSection({
                   </ul>
                 </div>
 
-                <a
-                  href={waUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.5rem",
-                    padding: "0.875rem 1.5rem",
-                    borderRadius: "12px",
-                    backgroundColor: pkg.isPopular ? "#8DA399" : "#2D2D2D",
-                    color: "white",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    textDecoration: "none",
-                    transition: "all 0.3s ease",
-                    fontFamily: "Plus Jakarta Sans, sans-serif",
-                    width: "100%",
-                    boxSizing: "border-box",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 20px rgba(45,45,45,0.25)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                  }}
-                >
-                  <MessageCircle size={16} />
-                  {isCustom && lowerPrice !== "gratis" && lowerPrice !== "free" ? t("cta_custom") : t("cta")}
-                </a>
+                {ctaTarget ? (
+                  <a
+                    href={ctaHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.5rem",
+                      padding: "0.875rem 1.5rem",
+                      borderRadius: "12px",
+                      backgroundColor: pkg.isPopular ? "#8DA399" : "#2D2D2D",
+                      color: "white",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      transition: "all 0.3s ease",
+                      fontFamily: "Plus Jakarta Sans, sans-serif",
+                      width: "100%",
+                      boxSizing: "border-box",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                      (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 20px rgba(45,45,45,0.25)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                      (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                    }}
+                  >
+                    <Zap size={16} />
+                    {t("cta_custom")}
+                  </a>
+                ) : (
+                  <Link
+                    href={ctaHref}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.5rem",
+                      padding: "0.875rem 1.5rem",
+                      borderRadius: "12px",
+                      backgroundColor: pkg.isPopular ? "#8DA399" : "#2D2D2D",
+                      color: "white",
+                      fontSize: "0.95rem",
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      transition: "all 0.3s ease",
+                      fontFamily: "Plus Jakarta Sans, sans-serif",
+                      width: "100%",
+                      boxSizing: "border-box",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                      (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 20px rgba(45,45,45,0.25)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                      (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                    }}
+                  >
+                    {isCustom && lowerPrice === "gratis" ? <Zap size={16} /> : <ArrowRight size={16} />}
+                    {t("cta")}
+                  </Link>
+                )}
               </motion.div>
             );
           })}

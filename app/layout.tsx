@@ -6,35 +6,39 @@ import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: {
-    default: "Pernahga — Konsultasi Teknologi & Solusi Software untuk Bisnis",
-    template: "%s | Pernahga",
+    default: "PernahGa — AI Asisten Managed untuk Solo Professional",
+    template: "%s | PernahGa",
   },
   description:
-    "Pernahga menyediakan konsultasi teknologi gratis dan solusi software custom untuk bisnis Anda. Dari analisis kebutuhan hingga implementasi, kami hadir sebagai mitra teknologi terpercaya.",
+    "Pega adalah AI asisten managed yang menangani DM customer, posting medsos, dan operasional harian. Hemat 20+ jam per minggu tanpa hire admin baru. Trial 3 hari gratis tanpa kartu kredit.",
   keywords: [
-    "konsultasi teknologi",
-    "software bisnis",
-    "solusi digital",
-    "pengembangan software",
-    "konsultasi IT",
+    "AI asisten",
+    "AI customer service",
+    "otomasi medsos",
+    "social media automation",
+    "AI managed assistant",
     "pernahga",
+    "pega",
+    "asisten virtual",
+    "chatbot WhatsApp",
+    "chatbot Instagram",
   ],
-  authors: [{ name: "Pernahga" }],
-  creator: "Pernahga",
+  authors: [{ name: "PernahGa" }],
+  creator: "PernahGa",
   openGraph: {
     type: "website",
     locale: "id_ID",
     url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: "Pernahga",
-    title: "Pernahga — Konsultasi Teknologi & Solusi Software untuk Bisnis",
+    siteName: "PernahGa",
+    title: "PernahGa — AI Asisten Managed untuk Solo Professional",
     description:
-      "Konsultasi teknologi gratis dan solusi software custom untuk bisnis Anda.",
+      "Pega ngerjain DM customer, posting medsos, dan operasional harian. Anda fokus ke kerja yang bernilai tinggi.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pernahga — Konsultasi Teknologi & Solusi Software",
+    title: "PernahGa — AI Asisten Managed untuk Solo Professional",
     description:
-      "Konsultasi teknologi gratis dan solusi software custom untuk bisnis Anda.",
+      "Pega ngerjain DM customer, posting medsos, dan operasional harian. Trial 3 hari gratis.",
   },
   robots: {
     index: true,

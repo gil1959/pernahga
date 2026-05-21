@@ -10,40 +10,41 @@
     "dashboard": "Dashboard",
     "admin": "Admin Panel",
     "logout": "Logout",
-    "consultation": "Free Consultation"
+    "consultation": "Try Free for 3 Days",
+    "pricing": "Pricing"
   },
   "hero": {
-    "badge": "#1 Tech Consultation for Your Business",
-    "cta_primary": "Free Consultation via WA",
-    "cta_secondary": "View Portfolio",
+    "badge": "Managed AI Assistant for Solo Professionals",
+    "cta_primary": "Try Free for 3 Days",
+    "cta_secondary": "See How It Works",
     "stats": {
-      "clients": "Happy Clients",
-      "projects": "Completed Projects",
-      "years": "Years of Experience",
-      "free": "First Consultation"
+      "clients": "Hours Saved Per Week",
+      "projects": "Initial Setup",
+      "years": "No Credit Card",
+      "free": "Always-On Active"
     }
   },
   "howItWorks": {
-    "title": "How Does It Work?",
-    "subtitle": "Three simple steps to the right technology solution for your business",
-    "step1_title": "Free Consultation",
-    "step1_desc": "Tell us about your business challenges. We listen at no cost.",
-    "step2_title": "Analysis & Recommendation",
-    "step2_desc": "Our expert team analyzes and provides the best solution recommendations.",
-    "step3_title": "Solution Implementation",
-    "step3_desc": "We help implement and ensure the solution works perfectly for your business."
+    "title": "Three Steps to Free Yourself from Daily Ops",
+    "subtitle": "Setup takes just 5 minutes. After that, Pega handles almost everything for you.",
+    "step1_title": "Sign Up for 3-Day Trial",
+    "step1_desc": "Just verify via WhatsApp. No credit card, no commitment, instantly get 200 credits.",
+    "step2_title": "Connect Channels & Define Persona",
+    "step2_desc": "Connect Instagram, WhatsApp, or Telegram. Set tone, active hours, and knowledge base.",
+    "step3_title": "Pega Active & Daily Reports",
+    "step3_desc": "Pega replies DMs, posts content, and sends daily summary directly to your WhatsApp."
   },
   "services": {
-    "title": "Service Packages",
-    "subtitle": "Choose the package that suits your needs and business scale",
+    "title": "Choose the Plan That Fits Your Scale",
+    "subtitle": "From free trial to enterprise. Upgrade anytime, cancel anytime, no questions asked.",
     "popular": "Most Popular",
     "cta": "Get Started",
-    "cta_custom": "Contact Us",
+    "cta_custom": "Contact Sales",
     "features": "What You Get"
   },
   "showcase": {
-    "title": "Our Portfolio",
-    "subtitle": "Software we've built for real clients with real problems",
+    "title": "The Experience Behind Pega",
+    "subtitle": "PernahGa has built products for SMEs to enterprise scale. Pega is born from that experience.",
     "viewAll": "View All Projects",
     "viewDetail": "View Details",
     "techStack": "Technologies Used",
@@ -58,25 +59,29 @@
   },
   "testimonials": {
     "title": "What Our Clients Say",
-    "subtitle": "Their trust is our greatest motivation"
+    "subtitle": "Professionals and businesses already feeling the difference."
   },
   "cta": {
-    "title": "Ready to Find the Right Technology Solution?",
-    "subtitle": "Your first consultation is completely free. No commitment, no hidden fees.",
-    "button": "Start Consultation via WhatsApp",
-    "note": "We usually respond within 24 hours"
+    "title": "Ready to Free Yourself from Daily Ops?",
+    "subtitle": "3-day trial is completely free. No credit card, no commitment, cancel anytime.",
+    "button": "Try Free for 3 Days",
+    "button_secondary": "Learn How It Works",
+    "note": "Just WhatsApp verification to get started"
   },
   "footer": {
-    "tagline": "The right technology solutions for growing businesses.",
-    "links_product": "Services",
+    "tagline": "Managed AI assistant for solo professionals who want to focus on high-value work.",
+    "links_product": "Product",
     "links_company": "Company",
     "links_legal": "Legal",
     "about": "About Us",
     "contact": "Contact",
+    "pricing": "Pricing",
+    "founding": "Founding Member",
+    "how_it_works": "How It Works",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
     "refund": "Refund Policy",
-    "copyright": "© 2025 Pernahga. All rights reserved."
+    "copyright": "© 2026 PernahGa. All rights reserved."
   },
   "auth": {
     "login_title": "Welcome Back",
