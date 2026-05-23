@@ -131,7 +131,11 @@ export async function getIntegration(provider: IntegrationProvider): Promise<Int
     maskedSecrets = Object.fromEntries(
       schema.secretFields.map((f) => [f.key, decrypted[f.key] ? maskSecret(decrypted[f.key]) : ""])
     );
-  } catch {}
+  } catch (err) {
+    // CRYPTO_MASTER_KEY not set OR ciphertext corrupted. Show empty masked
+    // values; admin needs to re-enter. Don't crash the whole panel.
+    maskedSecrets = Object.fromEntries(schema.secretFields.map((f) => [f.key, ""]));
+  }
   return {
     provider,
     displayName: schema.displayName,
