@@ -14,7 +14,8 @@ import {
   Users,
   LogOut,
   MessageCircle,
-  Shield
+  Shield,
+  Plug
 } from "lucide-react";
 
 const menuItems = [
@@ -26,6 +27,7 @@ const menuItems = [
   { href: "/admin/testimonials", label: "Testimonial", icon: <MessageSquareQuote size={20} /> },
   { href: "/admin/users", label: "Pengguna", icon: <Users size={20} /> },
   { href: "/admin/registered-ips", label: "Daftar IP", icon: <Shield size={20} /> },
+  { href: "/admin/integrations", label: "Integrasi", icon: <Plug size={20} /> },
   { href: "/admin/settings", label: "Pengaturan", icon: <Settings size={20} /> },
 ];
 
