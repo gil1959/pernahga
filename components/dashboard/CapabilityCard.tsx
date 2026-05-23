@@ -2,7 +2,19 @@
 
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { Loader2, Lock, CheckCircle2, MessageCircle, Send, Mail, Hash, Calendar, Film, Newspaper, Webhook } from "lucide-react";
+import { Loader2, Lock, CheckCircle2, Mail, Calendar, Film, Newspaper, Webhook, Sparkles, Crown } from "lucide-react";
+import {
+  SiWhatsapp,
+  SiInstagram,
+  SiTelegram,
+  SiDiscord,
+  SiFacebook,
+  SiThreads,
+  SiX,
+  SiTiktok,
+  SiPinterest,
+} from "react-icons/si";
+import { FaLinkedinIn } from "react-icons/fa6";
 
 export type CapabilityChannel =
   | "WHATSAPP" | "INSTAGRAM_DM" | "TELEGRAM" | "EMAIL" | "DISCORD"
@@ -11,6 +23,11 @@ export type CapabilityChannel =
   | "BOOKING_CALENDAR" | "IMAGE_GEN" | "VIDEO_SCRIPT" | "DAILY_NEWS_BRIEFING"
   | "WEBHOOK_INTEGRATION" | "WHITE_LABEL";
 
+/**
+ * Capability metadata. Brand logos use react-icons/si (SimpleIcons —
+ * accurate brand SVGs with proper marks). Non-brand capabilities
+ * (Email, Booking, Image Gen, etc.) keep neutral lucide icons.
+ */
 const CAP_META: Record<CapabilityChannel, {
   label: string;
   desc: string;
@@ -18,24 +35,24 @@ const CAP_META: Record<CapabilityChannel, {
   iconBg: string;
   icon: React.ReactNode;
 }> = {
-  WHATSAPP: { label: "WhatsApp", desc: "CS bot WA dengan tone Anda", minPlan: "Starter", iconBg: "#25d366", icon: <MessageCircle size={18} color="white" /> },
-  INSTAGRAM_DM: { label: "Instagram DM", desc: "Auto-reply DM IG 24/7", minPlan: "Starter", iconBg: "#E4405F", icon: <MessageCircle size={18} color="white" /> },
-  TELEGRAM: { label: "Telegram", desc: "Bot Telegram custom", minPlan: "Starter", iconBg: "#0088cc", icon: <Send size={18} color="white" /> },
+  WHATSAPP: { label: "WhatsApp", desc: "CS bot WA dengan tone Anda", minPlan: "Starter", iconBg: "#25D366", icon: <SiWhatsapp size={20} color="white" /> },
+  INSTAGRAM_DM: { label: "Instagram DM", desc: "Auto-reply DM IG 24/7", minPlan: "Starter", iconBg: "#E4405F", icon: <SiInstagram size={20} color="white" /> },
+  TELEGRAM: { label: "Telegram", desc: "Bot Telegram custom", minPlan: "Starter", iconBg: "#26A5E4", icon: <SiTelegram size={20} color="white" /> },
   EMAIL: { label: "Email", desc: "Auto-reply email customer", minPlan: "Pro", iconBg: "#6366f1", icon: <Mail size={18} color="white" /> },
-  DISCORD: { label: "Discord", desc: "Bot Discord komunitas", minPlan: "Business", iconBg: "#5865F2", icon: <Hash size={18} color="white" /> },
-  INSTAGRAM_POST: { label: "Auto-Post Instagram", desc: "Post feed/reels/story terjadwal", minPlan: "Pro", iconBg: "#E4405F", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 12 }}>IG</span> },
-  FACEBOOK_POST: { label: "Auto-Post Facebook", desc: "Post FB page terjadwal", minPlan: "Pro", iconBg: "#1877F2", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 12 }}>FB</span> },
-  LINKEDIN_POST: { label: "Auto-Post LinkedIn", desc: "Post LinkedIn personal/company", minPlan: "Pro", iconBg: "#0A66C2", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 12 }}>in</span> },
-  THREADS_POST: { label: "Auto-Post Threads", desc: "Post Threads terjadwal", minPlan: "Pro", iconBg: "#000000", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 12 }}>@</span> },
-  TWITTER_POST: { label: "Auto-Post X/Twitter", desc: "Post X/Twitter terjadwal", minPlan: "Pro", iconBg: "#000000", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 14 }}>X</span> },
-  TIKTOK_POST: { label: "Auto-Post TikTok", desc: "Post TikTok terjadwal", minPlan: "Business", iconBg: "#000000", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>TT</span> },
-  PINTEREST_POST: { label: "Auto-Post Pinterest", desc: "Pin Pinterest terjadwal", minPlan: "Business", iconBg: "#E60023", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 12 }}>P</span> },
+  DISCORD: { label: "Discord", desc: "Bot Discord komunitas", minPlan: "Business", iconBg: "#5865F2", icon: <SiDiscord size={20} color="white" /> },
+  INSTAGRAM_POST: { label: "Auto-Post Instagram", desc: "Post feed/reels/story terjadwal", minPlan: "Pro", iconBg: "#E4405F", icon: <SiInstagram size={20} color="white" /> },
+  FACEBOOK_POST: { label: "Auto-Post Facebook", desc: "Post FB page terjadwal", minPlan: "Pro", iconBg: "#1877F2", icon: <SiFacebook size={20} color="white" /> },
+  LINKEDIN_POST: { label: "Auto-Post LinkedIn", desc: "Post LinkedIn personal/company", minPlan: "Pro", iconBg: "#0A66C2", icon: <FaLinkedinIn size={20} color="white" /> },
+  THREADS_POST: { label: "Auto-Post Threads", desc: "Post Threads terjadwal", minPlan: "Pro", iconBg: "#000000", icon: <SiThreads size={20} color="white" /> },
+  TWITTER_POST: { label: "Auto-Post X/Twitter", desc: "Post X/Twitter terjadwal", minPlan: "Pro", iconBg: "#000000", icon: <SiX size={18} color="white" /> },
+  TIKTOK_POST: { label: "Auto-Post TikTok", desc: "Post TikTok terjadwal", minPlan: "Business", iconBg: "#000000", icon: <SiTiktok size={20} color="white" /> },
+  PINTEREST_POST: { label: "Auto-Post Pinterest", desc: "Pin Pinterest terjadwal", minPlan: "Business", iconBg: "#BD081C", icon: <SiPinterest size={20} color="white" /> },
   BOOKING_CALENDAR: { label: "Booking Calendar", desc: "Google Calendar / Cal.com", minPlan: "Pro", iconBg: "#3b82f6", icon: <Calendar size={18} color="white" /> },
-  IMAGE_GEN: { label: "Image Generation", desc: "AI image untuk konten", minPlan: "Pro", iconBg: "#a855f7", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>AI</span> },
+  IMAGE_GEN: { label: "Image Generation", desc: "AI image untuk konten", minPlan: "Pro", iconBg: "#a855f7", icon: <Sparkles size={18} color="white" /> },
   VIDEO_SCRIPT: { label: "Video Script", desc: "Storyboard + script otomatis", minPlan: "Business", iconBg: "#ec4899", icon: <Film size={18} color="white" /> },
   DAILY_NEWS_BRIEFING: { label: "Briefing Berita Harian", desc: "Update industri tiap pagi", minPlan: "Pro", iconBg: "#f59e0b", icon: <Newspaper size={18} color="white" /> },
   WEBHOOK_INTEGRATION: { label: "Webhook Integration", desc: "CRM / ERP / Notion", minPlan: "Business", iconBg: "#06b6d4", icon: <Webhook size={18} color="white" /> },
-  WHITE_LABEL: { label: "White-Label", desc: "Brand sebagai milik Anda", minPlan: "Enterprise", iconBg: "#64748b", icon: <span style={{ color: "white", fontWeight: 800, fontSize: 11 }}>WL</span> },
+  WHITE_LABEL: { label: "White-Label", desc: "Brand sebagai milik Anda", minPlan: "Enterprise", iconBg: "#64748b", icon: <Crown size={18} color="white" /> },
 };
 
 interface Props {
