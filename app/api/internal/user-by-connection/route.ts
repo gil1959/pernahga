@@ -10,7 +10,7 @@
  */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { loadUserWorkspace, buildSystemPrompt } from "@/lib/workspace-virtual";
+import { loadUserWorkspace, buildSystemPrompt, buildPersonalSystemPrompt } from "@/lib/workspace-virtual";
 import type { CapabilityChannel } from "@prisma/client";
 
 function authOk(req: Request) {
@@ -57,6 +57,7 @@ export async function GET(req: Request) {
     where: { userId: conn.userId },
     select: { creditsTotal: true, creditsUsed: true, status: true, packageId: true },
   });
+  const personalPrompt = buildPersonalSystemPrompt(ws, sub?.packageId);
 
   return NextResponse.json({
     userId: conn.userId,
@@ -70,6 +71,7 @@ export async function GET(req: Request) {
     },
     workspace: ws,
     systemPrompt,
+    personalPrompt,
     subscription: sub,
   });
 }

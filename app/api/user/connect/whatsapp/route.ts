@@ -108,16 +108,37 @@ export async function GET(req: Request) {
 
     // Auto-promote to ACTIVE when state=open
     if (state === "open") {
+      // Capture owner JID so Pega Engine can detect self-chat
+      let ownerJid: string | null = null;
+      try {
+        const fetchInst = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${instanceName}`, {
+          headers: { apikey: apiKey },
+        });
+        const arr = await fetchInst.json();
+        const found = Array.isArray(arr) ? arr[0] : arr;
+        ownerJid = found?.ownerJid || found?.instance?.owner || found?.instance?.ownerJid || null;
+      } catch { /* best-effort */ }
+
       await prisma.$transaction([
         prisma.userConnection.updateMany({
           where: { userId, channel: "WHATSAPP", externalId: instanceName },
-          data: { status: "ACTIVE", lastEventAt: new Date() },
+          data: {
+            status: "ACTIVE",
+            lastEventAt: new Date(),
+            publicData: JSON.stringify({ instanceName, ownerJid }),
+          },
         }),
         // Flip UserCapability.enabled so dashboard shows AKTIF
         prisma.userCapability.upsert({
           where: { userId_channel: { userId, channel: "WHATSAPP" } },
           update: { enabled: true },
           create: { userId, channel: "WHATSAPP", enabled: true, grantedByPlan: true },
+        }),
+        // PEGA_CHAT auto-enabled: owner can chat self via WA
+        prisma.userCapability.upsert({
+          where: { userId_channel: { userId, channel: "PEGA_CHAT" } },
+          update: { enabled: true, grantedByPlan: true },
+          create: { userId, channel: "PEGA_CHAT", enabled: true, grantedByPlan: true },
         }),
       ]);
     }
