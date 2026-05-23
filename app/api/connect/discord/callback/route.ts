@@ -7,6 +7,7 @@
  */
 import { NextResponse } from "next/server";
 import { loadActiveCreds, saveUserConnection } from "@/lib/connect-helpers";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
 const STATE_COOKIE = "discord_oauth_state";
@@ -88,6 +89,11 @@ export async function GET(req: Request) {
         scope: tokenData.scope,
       },
       status: "ACTIVE",
+    });
+    await prisma.userCapability.upsert({
+      where: { userId_channel: { userId, channel: "DISCORD" } },
+      update: { enabled: true },
+      create: { userId, channel: "DISCORD", enabled: true, grantedByPlan: true },
     });
 
     const res = NextResponse.redirect(`${HOME_URL}/dashboard?connected=discord&guild=${encodeURIComponent(guildName)}`);

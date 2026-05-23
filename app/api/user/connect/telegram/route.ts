@@ -125,6 +125,12 @@ export async function POST(req: Request) {
       },
       status: "ACTIVE",
     });
+    // Flip UserCapability.enabled so dashboard shows AKTIF
+    await prisma.userCapability.upsert({
+      where: { userId_channel: { userId, channel: "TELEGRAM" } },
+      update: { enabled: true },
+      create: { userId, channel: "TELEGRAM", enabled: true, grantedByPlan: true },
+    });
 
     return NextResponse.json({
       ok: true,
