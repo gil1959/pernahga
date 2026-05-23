@@ -148,7 +148,7 @@ export default function DashboardOverviewPage() {
                 Paket Anda
               </span>
             </div>
-            <h2 style={{ fontSize: "2rem", fontWeight: 800, marginBottom: "0.5rem" }}>{planTitle}</h2>
+            <h2 style={{ fontSize: "2rem", fontWeight: 800, marginBottom: "0.5rem", color: "#F4F1EA" }}>{planTitle}</h2>
             <span style={{
               display: "inline-flex",
               alignItems: "center",

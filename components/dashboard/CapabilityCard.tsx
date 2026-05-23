@@ -65,13 +65,14 @@ interface Props {
 export function CapabilityCard({ channel, caps, onUpgrade, onConnected }: Props) {
   const meta = CAP_META[channel];
   const cap = caps.find((c) => c.channel === channel);
-  const enabled = cap?.enabled ?? false;
-  const granted = cap?.grantedByPlan ?? false;
+  const connected = cap?.enabled ?? false; // user has actively connected
+  const granted = cap?.grantedByPlan ?? false; // user's plan includes this
+  const allowed = granted || connected;
 
   const [open, setOpen] = useState(false);
 
   const handleConnect = () => {
-    if (!enabled) {
+    if (!allowed) {
       onUpgrade({ channel, minPlan: meta.minPlan });
       return;
     }
@@ -85,7 +86,7 @@ export function CapabilityCard({ channel, caps, onUpgrade, onConnected }: Props)
         borderRadius: "16px",
         border: "1px solid #ede9df",
         padding: "1.25rem",
-        opacity: enabled ? 1 : 0.85,
+        opacity: allowed ? 1 : 0.85,
         position: "relative",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
@@ -99,12 +100,12 @@ export function CapabilityCard({ channel, caps, onUpgrade, onConnected }: Props)
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {enabled ? (
+          {connected ? (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.72rem", color: "#10b981", fontWeight: 700 }}>
               <CheckCircle2 size={12} /> AKTIF
             </span>
           ) : granted ? (
-            <span style={{ fontSize: "0.72rem", color: "#f59e0b", fontWeight: 700 }}>BELUM AKTIF</span>
+            <span style={{ fontSize: "0.72rem", color: "#f59e0b", fontWeight: 700 }}>SIAP CONNECT</span>
           ) : (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.72rem", color: "#9b9b9b", fontWeight: 700 }}>
               <Lock size={11} /> {meta.minPlan.toUpperCase()}+
@@ -116,14 +117,14 @@ export function CapabilityCard({ channel, caps, onUpgrade, onConnected }: Props)
               padding: "0.45rem 0.85rem",
               borderRadius: "8px",
               border: "none",
-              backgroundColor: enabled ? "#2D2D2D" : "#f3f1ec",
-              color: enabled ? "white" : "#6b6b6b",
+              backgroundColor: allowed ? "#2D2D2D" : "#f3f1ec",
+              color: allowed ? "white" : "#6b6b6b",
               cursor: "pointer",
               fontSize: "0.78rem",
               fontWeight: 700,
             }}
           >
-            {enabled ? "Connect" : "Upgrade"}
+            {connected ? "Kelola" : allowed ? "Connect" : "Upgrade"}
           </button>
         </div>
       </div>
