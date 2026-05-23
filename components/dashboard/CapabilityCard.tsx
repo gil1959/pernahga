@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import { Loader2, Lock, CheckCircle2, Mail, Calendar, Film, Newspaper, Webhook, Sparkles, Crown } from "lucide-react";
 import {
   SiWhatsapp,
@@ -15,6 +14,7 @@ import {
   SiPinterest,
 } from "react-icons/si";
 import { FaLinkedinIn } from "react-icons/fa6";
+import ConnectModal from "./ConnectModal";
 
 export type CapabilityChannel =
   | "WHATSAPP" | "INSTAGRAM_DM" | "TELEGRAM" | "EMAIL" | "DISCORD"
@@ -69,9 +69,6 @@ export function CapabilityCard({ channel, caps, onUpgrade, onConnected }: Props)
   const granted = cap?.grantedByPlan ?? false;
 
   const [open, setOpen] = useState(false);
-  const [handle, setHandle] = useState("");
-  const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   const handleConnect = () => {
     if (!enabled) {
@@ -79,29 +76,6 @@ export function CapabilityCard({ channel, caps, onUpgrade, onConnected }: Props)
       return;
     }
     setOpen(true);
-  };
-
-  const submit = async () => {
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/user/connection-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel, handle, notes }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      toast.success(data.duplicate ? "Permintaan sudah ada, admin akan menghubungi" : "Permintaan dikirim, admin akan kontak segera");
-      setOpen(false);
-      setHandle("");
-      setNotes("");
-      onConnected();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Gagal";
-      toast.error(msg);
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   return (
@@ -138,7 +112,6 @@ export function CapabilityCard({ channel, caps, onUpgrade, onConnected }: Props)
           )}
           <button
             onClick={handleConnect}
-            disabled={submitting}
             style={{
               padding: "0.45rem 0.85rem",
               borderRadius: "8px",
@@ -156,82 +129,15 @@ export function CapabilityCard({ channel, caps, onUpgrade, onConnected }: Props)
       </div>
 
       {open && (
-        <div
-          onClick={() => setOpen(false)}
-          style={{ position: "fixed", inset: 0, backgroundColor: "rgba(45,45,45,0.55)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{ backgroundColor: "white", borderRadius: "16px", maxWidth: "440px", width: "100%", padding: "2rem" }}
-          >
-            <div style={{ width: "48px", height: "48px", borderRadius: "12px", backgroundColor: meta.iconBg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
-              {meta.icon}
-            </div>
-            <h2 style={{ fontSize: "1.15rem", fontWeight: 800, color: "#2D2D2D", marginBottom: "0.4rem" }}>
-              Connect {meta.label}
-            </h2>
-            <p style={{ color: "#6b6b6b", marginBottom: "1.25rem", fontSize: "0.875rem" }}>
-              Isi info berikut. Admin akan menghubungi Anda untuk proses connect manual.
-            </p>
-            <div style={{ display: "grid", gap: "0.85rem" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#6b6b6b", marginBottom: "0.4rem", textTransform: "uppercase" }}>
-                  Handle / Akun
-                </label>
-                <input
-                  value={handle}
-                  onChange={(e) => setHandle(e.target.value)}
-                  placeholder="contoh: @namaanda atau nomor WA"
-                  style={{ width: "100%", padding: "0.65rem 0.85rem", border: "1px solid #ede9df", borderRadius: "10px", outline: "none", fontSize: "0.9rem" }}
-                />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#6b6b6b", marginBottom: "0.4rem", textTransform: "uppercase" }}>
-                  Catatan (opsional)
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Detail tambahan (jam aktif, persona Pega, dll)"
-                  rows={3}
-                  style={{ width: "100%", padding: "0.65rem 0.85rem", border: "1px solid #ede9df", borderRadius: "10px", outline: "none", fontSize: "0.9rem", resize: "vertical" }}
-                />
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.25rem" }}>
-              <button
-                onClick={submit}
-                disabled={submitting || !handle.trim()}
-                style={{
-                  flex: 1,
-                  padding: "0.85rem",
-                  backgroundColor: "#2D2D2D",
-                  color: "white",
-                  borderRadius: "10px",
-                  border: "none",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  cursor: submitting ? "wait" : "pointer",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: "0.4rem",
-                  opacity: submitting || !handle.trim() ? 0.7 : 1,
-                }}
-              >
-                {submitting && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
-                Kirim Permintaan
-              </button>
-              <button
-                onClick={() => setOpen(false)}
-                disabled={submitting}
-                style={{ flex: 1, padding: "0.85rem", backgroundColor: "white", color: "#2D2D2D", borderRadius: "10px", border: "1px solid #ede9df", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}
-              >
-                Batal
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConnectModal
+          channel={channel}
+          meta={{ label: meta.label, iconBg: meta.iconBg, icon: meta.icon }}
+          onClose={() => setOpen(false)}
+          onSuccess={() => {
+            setOpen(false);
+            onConnected();
+          }}
+        />
       )}
     </>
   );
