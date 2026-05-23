@@ -318,21 +318,39 @@ async function testEvolution(baseUrl: string, apiKey: string) {
   if (!baseUrl || !apiKey) {
     return { ok: false, message: "Base URL dan API key wajib diisi" };
   }
-  const url = baseUrl.replace(/\/+$/, "");
-  // Evolution API has GET / which returns version info.
-  const res = await fetch(`${url}/`, {
-    headers: { apikey: apiKey },
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!res.ok) {
-    return { ok: false, message: `Evolution API ${res.status}` };
+  // Vercel/serverless can't reach 127.0.0.1 — that resolves to the
+  // Vercel container itself. Provide a clear hint.
+  if (/^https?:\/\/(127\.0\.0\.1|localhost|0\.0\.0\.0)/i.test(baseUrl)) {
+    return {
+      ok: false,
+      message: "Base URL pakai 127.0.0.1/localhost ga akan jalan dari Vercel. Expose Evolution API ke public via subdomain (contoh: https://evo.pernahga.com) lalu update Base URL.",
+    };
   }
-  const data = await res.json().catch(() => ({}));
-  return {
-    ok: true,
-    message: `Evolution API ${data.version || "ok"}`,
-    meta: data,
-  };
+  const url = baseUrl.replace(/\/+$/, "");
+  try {
+    const res = await fetch(`${url}/`, {
+      headers: { apikey: apiKey },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      return { ok: false, message: `Evolution API ${res.status}` };
+    }
+    const data = await res.json().catch(() => ({}));
+    return {
+      ok: true,
+      message: `Evolution API ${data.version || "ok"}`,
+      meta: data,
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("fetch failed") || msg.includes("ENOTFOUND") || msg.includes("ECONNREFUSED")) {
+      return {
+        ok: false,
+        message: `Tidak bisa reach ${url}. Pastikan Evolution API public (HTTPS subdomain), DNS udah propagate, dan firewall buka port 443.`,
+      };
+    }
+    return { ok: false, message: msg };
+  }
 }
 
 async function testMeta(appId: string, appSecret: string) {
