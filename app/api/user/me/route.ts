@@ -45,9 +45,38 @@ export async function GET() {
         select: { id: true, channel: true, status: true, handle: true, createdAt: true },
         orderBy: { createdAt: "desc" },
       },
+      userConnections: {
+        select: {
+          id: true,
+          channel: true,
+          provider: true,
+          status: true,
+          label: true,
+          externalId: true,
+          lastEventAt: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
   if (!user) return NextResponse.json({ message: "Not found" }, { status: 404 });
+
+  // Compute real "connected" map from UserConnection (single source of truth
+  // for whether a channel is actively wired up). UserCapability.enabled is
+  // legacy/admin-controlled; UI should trust UserConnection.status === ACTIVE.
+  const connectedChannels = new Set(
+    user.userConnections
+      .filter((c) => c.status === "ACTIVE")
+      .map((c) => c.channel)
+  );
+  const capabilitiesView = user.capabilities.map((c) => ({
+    channel: c.channel,
+    grantedByPlan: c.grantedByPlan,
+    // "enabled" now means: actively connected via UserConnection
+    enabled: connectedChannels.has(c.channel),
+    legacyEnabled: c.enabled, // keep raw value for admin debugging
+  }));
 
   // Last 30-day usage aggregate per channel.
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -58,7 +87,10 @@ export async function GET() {
   });
 
   return NextResponse.json({
-    user,
+    user: {
+      ...user,
+      capabilities: capabilitiesView,
+    },
     usage: usage.map((u) => ({ channel: u.channel, credits: u._sum.credits || 0 })),
   });
 }
