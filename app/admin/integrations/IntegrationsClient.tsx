@@ -91,15 +91,17 @@ export default function IntegrationsClient() {
       {!cryptoKeyOk && (
         <div style={{
           padding: "1rem 1.25rem",
-          backgroundColor: "#fef2f2",
-          border: "1px solid #fecaca",
+          backgroundColor: "#fffbeb",
+          border: "1px solid #fde68a",
           borderRadius: 12,
           marginBottom: "1.5rem",
-          color: "#991b1b",
-          fontSize: "0.9rem",
+          color: "#854d0e",
+          fontSize: "0.85rem",
         }}>
-          <strong style={{ display: "block", marginBottom: 6 }}>⚠️ CRYPTO_MASTER_KEY belum diset</strong>
-          Buka Vercel → Settings → Environment Variables → tambahkan <code style={{ background: "rgba(0,0,0,0.05)", padding: "1px 6px", borderRadius: 4, fontFamily: "monospace" }}>CRYPTO_MASTER_KEY</code> (32-byte hex) → redeploy. Tanpa key ini, credential ga bisa di-encrypt/decrypt.
+          <strong style={{ display: "block", marginBottom: 6 }}>⚠️ Mode plaintext (encryption off)</strong>
+          <code style={{ background: "rgba(0,0,0,0.05)", padding: "1px 6px", borderRadius: 4, fontFamily: "monospace" }}>CRYPTO_MASTER_KEY</code> env belum diset di Vercel.
+          Credential tetap bisa disave dan dipakai, tapi disimpan plaintext di database.
+          Untuk production-grade encryption, set env CRYPTO_MASTER_KEY (32-byte hex) lalu redeploy.
         </div>
       )}
 

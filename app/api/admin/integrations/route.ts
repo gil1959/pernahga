@@ -40,6 +40,9 @@ function friendlyError(err: unknown): string {
   return msg;
 }
 
+import { isCryptoKeyAvailable } from "@/lib/crypto-vault";
+import { prisma } from "@/lib/prisma";
+
 export async function GET() {
   const session = await requireAdmin();
   if (!session) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
@@ -60,12 +63,17 @@ export async function GET() {
         }
       })
     );
-    // Surface vault key health for the UI
-    const cryptoKeyOk = Boolean(process.env.CRYPTO_MASTER_KEY);
-    return NextResponse.json({ providers: result, cryptoKeyOk });
+    const cryptoKeyOk = isCryptoKeyAvailable();
+    let tableOk = true;
+    try {
+      await prisma.integrationCredential.count();
+    } catch {
+      tableOk = false;
+    }
+    return NextResponse.json({ providers: result, cryptoKeyOk, tableOk });
   } catch (err: unknown) {
     return NextResponse.json(
-      { message: friendlyError(err), cryptoKeyOk: Boolean(process.env.CRYPTO_MASTER_KEY) },
+      { message: friendlyError(err), cryptoKeyOk: isCryptoKeyAvailable() },
       { status: 500 }
     );
   }
