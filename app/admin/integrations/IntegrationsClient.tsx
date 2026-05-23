@@ -26,6 +26,7 @@ interface Integration {
 interface Row {
   schema: Schema;
   integration: Integration;
+  loadError?: string;
 }
 
 const STATUS_INFO: Record<string, { color: string; bg: string; label: string; icon: React.ReactNode }> = {
@@ -40,15 +41,20 @@ export default function IntegrationsClient() {
   const [rows, setRows] = useState<Row[]>([]);
   const [activeTab, setActiveTab] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [cryptoKeyOk, setCryptoKeyOk] = useState<boolean>(true);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/integrations");
-      if (!res.ok) throw new Error("Gagal load integrasi");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${res.status}`);
+      }
       const d = await res.json();
-      setRows(d.providers);
-      if (!activeTab && d.providers.length > 0) {
+      setRows(d.providers || []);
+      setCryptoKeyOk(d.cryptoKeyOk !== false);
+      if (!activeTab && d.providers?.length > 0) {
         setActiveTab(d.providers[0].schema.provider);
       }
     } catch (e: unknown) {
@@ -81,6 +87,21 @@ export default function IntegrationsClient() {
           Isi credential, test, lalu aktifkan biar user bisa pakai dari dashboard.
         </p>
       </div>
+
+      {!cryptoKeyOk && (
+        <div style={{
+          padding: "1rem 1.25rem",
+          backgroundColor: "#fef2f2",
+          border: "1px solid #fecaca",
+          borderRadius: 12,
+          marginBottom: "1.5rem",
+          color: "#991b1b",
+          fontSize: "0.9rem",
+        }}>
+          <strong style={{ display: "block", marginBottom: 6 }}>⚠️ CRYPTO_MASTER_KEY belum diset</strong>
+          Buka Vercel → Settings → Environment Variables → tambahkan <code style={{ background: "rgba(0,0,0,0.05)", padding: "1px 6px", borderRadius: 4, fontFamily: "monospace" }}>CRYPTO_MASTER_KEY</code> (32-byte hex) → redeploy. Tanpa key ini, credential ga bisa di-encrypt/decrypt.
+        </div>
+      )}
 
       {/* Tab strip */}
       <div style={{ display: "flex", gap: 8, marginBottom: "1.5rem", flexWrap: "wrap" }}>
@@ -154,8 +175,9 @@ function ProviderForm({ row, onSaved }: { row: Row; onSaved: () => void }) {
           ...overrides,
         }),
       });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.message || "Gagal");
+      // Try parse JSON even on error so we get backend message
+      const d = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+      if (!res.ok) throw new Error(d.message || `HTTP ${res.status}`);
       if (action === "test") {
         if (d.ok) toast.success(d.message || "Test berhasil");
         else toast.error(d.message || "Test gagal");
@@ -167,7 +189,7 @@ function ProviderForm({ row, onSaved }: { row: Row; onSaved: () => void }) {
       }
       onSaved();
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Gagal");
+      toast.error(e instanceof Error ? e.message : "Gagal", { duration: 7000 });
     } finally {
       setSaving(false);
       setTesting(false);
