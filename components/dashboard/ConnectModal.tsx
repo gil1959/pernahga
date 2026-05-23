@@ -62,7 +62,8 @@ export default function ConnectModal({ channel, meta, onClose, onSuccess }: Prop
         )}
         {channel === "DISCORD" && <DiscordFlow />}
         {channel === "EMAIL" && <EmailFlow />}
-        {!["WHATSAPP", "TELEGRAM", "DISCORD", "EMAIL"].includes(channel) && (
+        {channel === "PEGA_CHAT" && <PegaChatFlow />}
+        {!["WHATSAPP", "TELEGRAM", "DISCORD", "EMAIL", "PEGA_CHAT"].includes(channel) && (
           <ManualRequest channel={channel} onSuccess={onSuccess} />
         )}
       </div>
@@ -300,6 +301,38 @@ function EmailFlow() {
 }
 
 // ---------------- MANUAL FALLBACK ----------------
+function PegaChatFlow() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+      <p style={{ fontSize: "0.85rem", lineHeight: 1.6 }}>
+        Pega Chat aktif otomatis begitu kamu connect <strong>WhatsApp</strong> atau <strong>Telegram</strong>.
+        Gunakan untuk minta laporan, brainstorm, draft caption, dst.
+      </p>
+
+      <div style={{ background: "#1a1a1a", borderRadius: "0.6rem", padding: "0.85rem 1rem", border: "1px solid #2a2a2a" }}>
+        <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#F4F1EA", marginBottom: "0.4rem" }}>Via WhatsApp</p>
+        <p style={{ fontSize: "0.78rem", color: "#9b9b9b", lineHeight: 1.6 }}>
+          Buka WhatsApp → fitur <em>"Pesan ke diri sendiri"</em> → chat apapun.
+          Pega bakal balas sesuai paket aktif kamu. Kalau minta hal di luar paket (mis. coding di Trial),
+          Pega kasih tau perlu upgrade.
+        </p>
+      </div>
+
+      <div style={{ background: "#1a1a1a", borderRadius: "0.6rem", padding: "0.85rem 1rem", border: "1px solid #2a2a2a" }}>
+        <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#F4F1EA", marginBottom: "0.4rem" }}>Via Telegram</p>
+        <p style={{ fontSize: "0.78rem", color: "#9b9b9b", lineHeight: 1.6 }}>
+          Klik tombol Connect di card <strong>Telegram</strong>. Pilih opsi pertama (Bot Pega Pusat) →
+          tap link → Start. Setelah binding, semua chat di bot itu = personal mode.
+        </p>
+      </div>
+
+      <p style={{ fontSize: "0.72rem", color: "#9b9b9b", marginTop: "0.4rem" }}>
+        Setiap balasan tetap potong kredit sesuai cost AI real (1 kredit ≈ $0.001).
+      </p>
+    </div>
+  );
+}
+
 function ManualRequest({ channel, onSuccess }: { channel: CapabilityChannel; onSuccess: () => void }) {
   const [handle, setHandle] = useState("");
   const [notes, setNotes] = useState("");
