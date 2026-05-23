@@ -12,7 +12,8 @@ import {
   LogOut,
   Activity,
   Crown,
-  Home
+  Home,
+  Sparkles
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -22,6 +23,7 @@ export default function UserSidebar() {
 
   const menuItems = [
     { href: "/dashboard", label: "Overview", icon: <LayoutDashboard size={20} /> },
+    { href: "/dashboard/workspace", label: "Workspace Pega", icon: <Sparkles size={20} /> },
     { href: "/dashboard/usage", label: "Usage", icon: <Activity size={20} /> },
     { href: "/dashboard/billing", label: "Paket & Billing", icon: <Crown size={20} /> },
     { href: "/dashboard/saved", label: "Aktivitas", icon: <Bookmark size={20} /> },

@@ -17,6 +17,9 @@ interface Me {
     phone: string | null;
     phoneVerified: string | null;
     isBanned: boolean;
+    onboardingDone?: boolean;
+    businessName?: string | null;
+    personaStyle?: string | null;
     subscription: {
       status: string;
       package: { id: string; title: string; price: string };
@@ -89,6 +92,42 @@ export default function DashboardOverviewPage() {
         </h1>
         <p style={{ color: "#6b6b6b" }}>Pantau usage, kelola connect, dan kontrol Pega di sini.</p>
       </div>
+
+      {/* Onboarding nudge */}
+      {!u.onboardingDone && (
+        <div style={{
+          backgroundColor: "#fef3c7",
+          border: "1px solid #fde68a",
+          padding: "1.25rem 1.5rem",
+          borderRadius: 16,
+          marginBottom: "1.5rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 16,
+        }}>
+          <div>
+            <div style={{ fontWeight: 800, color: "#92400e", marginBottom: 2 }}>
+              Setup Pega Anda dulu
+            </div>
+            <div style={{ fontSize: "0.85rem", color: "#78350f" }}>
+              Kasih konteks bisnis + persona biar Pega bisa balas customer dengan tone Anda.
+            </div>
+          </div>
+          <Link href="/onboarding" style={{
+            padding: "0.65rem 1.2rem",
+            backgroundColor: "#2D2D2D",
+            color: "white",
+            borderRadius: 10,
+            textDecoration: "none",
+            fontWeight: 700,
+            fontSize: "0.85rem",
+            whiteSpace: "nowrap",
+          }}>
+            Mulai Setup
+          </Link>
+        </div>
+      )}
 
       {/* Plan + Usage */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.25rem", marginBottom: "1.5rem" }}>

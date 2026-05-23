@@ -25,6 +25,9 @@ export async function GET() {
       company: true,
       isBanned: true,
       createdAt: true,
+      onboardingDone: true,
+      businessName: true,
+      personaStyle: true,
       subscription: {
         select: {
           status: true,

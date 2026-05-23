@@ -21,6 +21,7 @@ export default auth((req) => {
   const isAuthPage = nextPath.startsWith("/login") || nextPath.startsWith("/register");
   const isAdminPage = nextPath.startsWith("/admin");
   const isDashboardPage = nextPath.startsWith("/dashboard");
+  const isOnboardingPage = nextPath.startsWith("/onboarding");
   const isVerifyPage = nextPath.startsWith("/verify-phone");
 
   // Already-authenticated users hitting login/register go straight to their home.
@@ -55,7 +56,7 @@ export default auth((req) => {
   }
 
   // Unauthenticated visitors trying to access protected areas.
-  if (!isLoggedIn && (isAdminPage || isDashboardPage)) {
+  if (!isLoggedIn && (isAdminPage || isDashboardPage || isOnboardingPage)) {
     let callbackUrl = nextPath;
     if (req.nextUrl.search) callbackUrl += req.nextUrl.search;
     const encodedCallbackUrl = encodeURIComponent(callbackUrl);
@@ -67,12 +68,12 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  if (isDashboardPage && userRole === "ADMIN") {
+  if ((isDashboardPage || isOnboardingPage) && userRole === "ADMIN") {
     return NextResponse.redirect(new URL("/admin/dashboard", req.url));
   }
 
-  // Non-admin users on dashboard MUST have phoneVerified.
-  if (isDashboardPage && userRole !== "ADMIN" && !phoneVerified) {
+  // Non-admin users on dashboard/onboarding MUST have phoneVerified.
+  if ((isDashboardPage || isOnboardingPage) && userRole !== "ADMIN" && !phoneVerified) {
     let nextUrl = nextPath;
     if (req.nextUrl.search) nextUrl += req.nextUrl.search;
     const encoded = encodeURIComponent(nextUrl);
