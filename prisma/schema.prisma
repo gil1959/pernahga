@@ -27,6 +27,18 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // ===== Workspace virtual (LOCKED v1.0 2026-05-23) =====
+  // Fields read by Pega Engine (Pega 2) to build per-user system prompts.
+  businessName    String?
+  businessDesc    String?  @db.Text
+  businessIndustry String?
+  personaStyle    PersonaStyle  @default(SANTAI)
+  personaTone     String?  @db.Text   // custom tone bicara override
+  personaSignature String? // sign-off text (e.g. "Salam, Mira")
+  operatingHours  String?  @db.Text  // JSON: { mon: "09-17", ... }
+  faqEntries      String?  @db.Text  // JSON array [{ q, a }, ...]
+  onboardingDone  Boolean  @default(false)
+
   accounts      Account[]
   sessions      Session[]
   consultations Consultation[]
@@ -208,6 +220,14 @@ enum Role {
   ADMIN
 }
 
+enum PersonaStyle {
+  SANTAI
+  FORMAL
+  CERIA
+  PROFESIONAL
+  CUSTOM
+}
+
 enum EducationType {
   YOUTUBE
   TIKTOK
@@ -277,10 +297,12 @@ model Subscription {
   endsAt        DateTime?
   trialEndsAt   DateTime?
   cancelledAt   DateTime?
-  // Credit accounting
-  creditsTotal  Int                 @default(0)  // monthly quota
+  // Credit accounting (LOCKED v1.0 2026-05-23 - real cost AI, 1 kredit = $0.001)
+  creditsTotal  Int                 @default(0)  // quota per cycle
   creditsUsed   Int                 @default(0)
   creditsResetAt DateTime?          // next refresh tick
+  cycleStartAt  DateTime?           // current cycle start (for analytics)
+  lastRefreshAt DateTime?           // last successful refresh tick
   // Billing
   paymentMethod String?             // "midtrans" | "manual" | "trial"
   externalRef   String?             // Midtrans order id, etc.
@@ -293,6 +315,7 @@ model Subscription {
 
   @@index([status])
   @@index([packageId])
+  @@index([creditsResetAt])
 }
 
 model UserCapability {
@@ -317,6 +340,11 @@ model UsageLog {
   userId    String
   channel   String   // free-form (whatsapp_send, image_gen, post_ig, etc.)
   credits   Int      @default(1)
+  taskType  String?  // task_type label (e.g. "wa_reply", "image_gen", "caption_gen")
+  costUsd   Float?   // real AI cost in USD (from 9Router usageHistory)
+  tokensIn  Int?     // prompt tokens
+  tokensOut Int?     // completion tokens
+  model     String?  // model id used (e.g. "claude-sonnet-4-6")
   meta      String?  @db.Text // JSON
   createdAt DateTime @default(now())
 
@@ -324,6 +352,7 @@ model UsageLog {
 
   @@index([userId, createdAt])
   @@index([channel])
+  @@index([taskType])
 }
 
 model ConnectionRequest {

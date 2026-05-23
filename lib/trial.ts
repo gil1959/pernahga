@@ -36,6 +36,7 @@ export async function provisionTrial(userId: string): Promise<void> {
       startsAt: now,
       endsAt: trialEndsAt,
       trialEndsAt,
+      cycleStartAt: now,
       paymentMethod: "trial",
     },
   });

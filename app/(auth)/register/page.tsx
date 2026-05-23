@@ -92,7 +92,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Terjadi kesalahan");
 
-      toast.success("Registrasi berhasil, mengarahkan ke dashboard...");
+      toast.success("Registrasi berhasil, mengarahkan ke setup Pega...");
 
       // Auto sign-in pakai credentials yang baru saja di-create.
       const signInRes = await signIn("credentials", {
@@ -106,8 +106,9 @@ export default function RegisterPage() {
         toast.error("Login otomatis gagal, silakan login manual.");
         setTimeout(() => router.push("/login"), 1200);
       } else {
-        // phoneVerified=now() udah di-set saat register, jadi proxy lolosin /dashboard.
-        router.push("/dashboard");
+        // phoneVerified=now() udah di-set saat register, jadi proxy lolosin /onboarding.
+        // First-time users masuk wizard dulu, baru ke /dashboard pas selesai/skip.
+        router.push("/onboarding");
         router.refresh();
       }
     } catch (error: unknown) {
