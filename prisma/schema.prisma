@@ -288,6 +288,70 @@ model RegisteredIp {
   updatedAt   DateTime @updatedAt
 }
 
+/// Encrypted credential vault for outbound integrations (Discord/Telegram/
+/// Google OAuth/Evolution WA/Meta). Admin-managed via /admin/integrations.
+/// Values are AES-256-GCM encrypted at rest using CRYPTO_MASTER_KEY env.
+model IntegrationCredential {
+  id          String              @id @default(cuid())
+  provider    IntegrationProvider @unique
+  enabled     Boolean             @default(false)
+  status      IntegrationStatus   @default(NOT_CONFIGURED)
+  /// JSON of { fieldKey: encryptedValueBase64 } - per-provider field set
+  encryptedData String            @db.Text
+  /// JSON of non-secret config (redirect URLs, webhook URLs, bot username, etc.)
+  publicData    String            @db.Text @default("{}")
+  lastTestedAt  DateTime?
+  lastTestError String?           @db.Text
+  notes         String?           @db.Text
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([provider])
+  @@index([enabled])
+}
+
+enum IntegrationProvider {
+  DISCORD
+  TELEGRAM_PEGA      // central bot (Opsi 1)
+  GOOGLE_OAUTH       // email connect via Google
+  WHATSAPP_EVOLUTION // self-hosted Evolution API instance
+  META_BUSINESS      // IG/FB/Threads via Meta Embedded Signup
+}
+
+enum IntegrationStatus {
+  NOT_CONFIGURED
+  PENDING_TEST
+  VALID
+  INVALID
+  DISABLED
+}
+
+/// Per-user channel connection (real, not just request).
+/// Created when user successfully connects via dashboard 1-klik flow.
+model UserConnection {
+  id          String            @id @default(cuid())
+  userId      String
+  channel     CapabilityChannel
+  provider    IntegrationProvider
+  /// Stable external id (e.g. Telegram chat_id, Discord guild_id, IG account id, WA instance name)
+  externalId  String
+  /// Display label shown to user (e.g. bot username, channel title, phone number masked)
+  label       String?
+  /// JSON of per-connection encrypted secrets (user bot tokens, OAuth refresh tokens, etc.)
+  encryptedData String?         @db.Text
+  /// JSON of non-secret connection config
+  publicData    String?         @db.Text
+  status      ConnectionStatus  @default(REQUESTED)
+  lastEventAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([userId, channel, provider, externalId])
+  @@index([userId])
+  @@index([channel])
+  @@index([provider])
+}
+
 model Subscription {
   id            String              @id @default(cuid())
   userId        String              @unique
