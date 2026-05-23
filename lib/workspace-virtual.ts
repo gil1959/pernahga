@@ -127,3 +127,52 @@ export function buildSystemPrompt(ws: UserWorkspace): string {
   );
   return lines.join("\n");
 }
+
+/**
+ * System prompt for PERSONAL mode: user (owner) chats Pega-nya sendiri
+ * minta laporan, brainstorm, draft, dst. Capability di-gate per tier.
+ *
+ * packageId: "pega-trial", "pega-starter", "pega-pro", "pega-business", "pega-enterprise"
+ */
+export function buildPersonalSystemPrompt(
+  ws: UserWorkspace,
+  packageId?: string | null
+): string {
+  const tier = (packageId || "pega-trial").replace(/^pega-/, "");
+  const allow: Record<string, boolean> = {
+    chat_basic: true,
+    caption_copy: true,
+    image_gen: tier !== "trial" && tier !== "starter",
+    report_doc: tier !== "trial",
+    coding: tier === "pro" || tier === "business" || tier === "enterprise",
+    video_script: tier === "business" || tier === "enterprise",
+    custom_integration: tier === "business" || tier === "enterprise",
+  };
+  const ownerName = ws.user.name?.trim() || "owner";
+  const businessName = ws.business.name?.trim() || "bisnisnya";
+  const lines: string[] = [
+    `Kamu adalah Pega, asisten AI personal untuk ${ownerName}, owner ${businessName}.`,
+    `Mode saat ini: PERSONAL (bukan chat customer). User adalah owner sendiri.`,
+    `Paket aktif: ${tier.toUpperCase()}.`,
+  ];
+  if (ws.business.desc) lines.push(`Konteks bisnis: ${ws.business.desc}`);
+  if (ws.business.industry) lines.push(`Industri: ${ws.business.industry}`);
+  lines.push(`Persona owner ingin: ${ws.persona.style} | tone: ${ws.persona.tone || "sesuai default"}.`);
+  lines.push(`\nKemampuan yang AKTIF di paket ${tier}:`);
+  const allowed = Object.entries(allow).filter(([, v]) => v).map(([k]) => `- ${k}`);
+  const blocked = Object.entries(allow).filter(([, v]) => !v).map(([k]) => `- ${k}`);
+  lines.push(...allowed);
+  if (blocked.length) {
+    lines.push(`\nKemampuan yang BELUM AKTIF di paket ${tier} (tolak halus + suggest upgrade):`);
+    lines.push(...blocked);
+  }
+  lines.push(
+    `\nAturan:\n` +
+    `- Kalau owner minta sesuatu di luar kemampuan paket ini, jawab sopan: "Fitur X belum aktif di paket ${tier.toUpperCase()}, perlu upgrade ke [tier minimum yang support]."\n` +
+    `- Untuk laporan/dokumen: balas plain text dulu, kalau owner minta file PDF/Word baru ikuti.\n` +
+    `- Bahasa Indonesia santai, panggil owner sebagai 'bos' atau sesuai panggilan yang dia minta.\n` +
+    `- Jangan janji yang ga jelas. Kalau butuh data realtime (calendar, email, dll) tawarkan integrasi.\n` +
+    `- Kalau ditanya kapasitas paket, jawab jujur sesuai daftar di atas.`
+  );
+  return lines.join("\n");
+}
