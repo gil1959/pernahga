@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { PLAN_CAPABILITIES, isPlanKey, type PlanKey } from "@/lib/plans";
 
 /**
  * GET /api/user/me
@@ -61,6 +62,33 @@ export async function GET() {
     },
   });
   if (!user) return NextResponse.json({ message: "Not found" }, { status: 404 });
+
+  // Backfill: ensure UserCapability rows match plan grants. Cheap upsert pass.
+  // Uses PLAN_CAPABILITIES as source of truth so existing accounts get newly-added
+  // capabilities (e.g. PEGA_CHAT) without re-seed.
+  const planTitle = user.subscription?.package?.title;
+  if (isPlanKey(planTitle as string)) {
+    const planKey = planTitle as PlanKey;
+    const granted = PLAN_CAPABILITIES[planKey];
+    const existing = new Set(user.capabilities.map((c) => c.channel));
+    const missing = granted.filter((ch) => !existing.has(ch));
+    if (missing.length > 0) {
+      await prisma.$transaction(
+        missing.map((ch) =>
+          prisma.userCapability.upsert({
+            where: { userId_channel: { userId: user.id, channel: ch } },
+            update: { grantedByPlan: true },
+            create: { userId: user.id, channel: ch, enabled: false, grantedByPlan: true },
+          })
+        )
+      );
+      // Re-fetch capabilities after backfill
+      user.capabilities = await prisma.userCapability.findMany({
+        where: { userId: user.id },
+        select: { channel: true, enabled: true, grantedByPlan: true },
+      });
+    }
+  }
 
   // Compute real "connected" map from UserConnection (single source of truth
   // for whether a channel is actively wired up). UserCapability.enabled is
