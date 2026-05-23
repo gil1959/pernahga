@@ -108,10 +108,18 @@ export async function GET(req: Request) {
 
     // Auto-promote to ACTIVE when state=open
     if (state === "open") {
-      await prisma.userConnection.updateMany({
-        where: { userId, channel: "WHATSAPP", externalId: instanceName },
-        data: { status: "ACTIVE", lastEventAt: new Date() },
-      });
+      await prisma.$transaction([
+        prisma.userConnection.updateMany({
+          where: { userId, channel: "WHATSAPP", externalId: instanceName },
+          data: { status: "ACTIVE", lastEventAt: new Date() },
+        }),
+        // Flip UserCapability.enabled so dashboard shows AKTIF
+        prisma.userCapability.upsert({
+          where: { userId_channel: { userId, channel: "WHATSAPP" } },
+          update: { enabled: true },
+          create: { userId, channel: "WHATSAPP", enabled: true, grantedByPlan: true },
+        }),
+      ]);
     }
 
     return NextResponse.json({ ok: true, state });

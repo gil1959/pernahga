@@ -5,6 +5,7 @@
  */
 import { NextResponse } from "next/server";
 import { loadActiveCreds, saveUserConnection } from "@/lib/connect-helpers";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
 const STATE_COOKIE = "google_oauth_state";
@@ -79,6 +80,11 @@ export async function GET(req: Request) {
         expiresIn: tokenData.expires_in,
       },
       status: "ACTIVE",
+    });
+    await prisma.userCapability.upsert({
+      where: { userId_channel: { userId, channel: "EMAIL" } },
+      update: { enabled: true },
+      create: { userId, channel: "EMAIL", enabled: true, grantedByPlan: true },
     });
 
     const res = NextResponse.redirect(`${HOME_URL}/dashboard?connected=email&account=${encodeURIComponent(userinfo.email)}`);
