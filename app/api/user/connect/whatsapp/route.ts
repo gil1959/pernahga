@@ -58,7 +58,7 @@ export async function POST() {
       throw new Error(`Evolution API: ${JSON.stringify(createData).slice(0, 200)}`);
     }
 
-    // Save initial connection row (REQUESTED until QR scanned).
+        // Save initial connection row (REQUESTED until QR scanned).
     await saveUserConnection({
       userId,
       channel: "WHATSAPP",
@@ -69,11 +69,10 @@ export async function POST() {
       publicData: { instanceName },
     });
 
-    const qrCode = createData?.qrcode?.base64 || createData?.qrcode?.code || createData?.base64;
     return NextResponse.json({
       ok: true,
       instanceName,
-      qrCode, // data URL or base64 string
+      qrCode: createData?.qrcode?.base64 || createData?.base64,
       pairingCode: createData?.qrcode?.pairingCode || null,
       expiresIn: 60, // seconds; client should refresh after this
     });
