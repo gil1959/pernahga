@@ -123,6 +123,7 @@ export const CAPABILITY_MIN_PLAN: Record<CapabilityChannel, PlanKey> = {
   DAILY_NEWS_BRIEFING: "Pro",
   WEBHOOK_INTEGRATION: "Business",
   WHITE_LABEL: "Enterprise",
+  PEGA_CHAT: "Trial",
 };
 
 export const CAPABILITY_LABEL: Record<CapabilityChannel, string> = {
@@ -144,6 +145,7 @@ export const CAPABILITY_LABEL: Record<CapabilityChannel, string> = {
   DAILY_NEWS_BRIEFING: "Briefing Berita Harian",
   WEBHOOK_INTEGRATION: "Webhook Custom Integration",
   WHITE_LABEL: "White-Label Identity",
+  PEGA_CHAT: "Chat Personal dengan Pega",
 };
 
 export function isPlanKey(s: string | undefined | null): s is PlanKey {
