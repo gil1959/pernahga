@@ -93,13 +93,15 @@ export function decryptConnectionSecrets(enc: string | null): Record<string, str
   }
 }
 
-/** Capability gate — user must have UserCapability.enabled = true on this channel. */
+/** Capability gate — user must have plan grant OR already-connected status. */
 export async function requireCapability(userId: string, channel: CapabilityChannel) {
   const cap = await prisma.userCapability.findUnique({
     where: { userId_channel: { userId, channel } },
   });
-  if (!cap?.enabled) {
-    const err = new Error(`Channel ${channel} belum aktif di plan Anda`);
+  // grantedByPlan = plan tier covers this channel → user can connect
+  // enabled = user already activated → still allowed (idempotent reconnect)
+  if (!cap?.grantedByPlan && !cap?.enabled) {
+    const err = new Error(`Channel ${channel} belum aktif di plan Anda. Upgrade paket untuk pakai channel ini.`);
     (err as Error & { status?: number }).status = 403;
     throw err;
   }
