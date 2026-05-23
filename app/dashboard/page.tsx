@@ -234,6 +234,7 @@ export default function DashboardOverviewPage() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
           <CapabilityCard channel="WHATSAPP" caps={u.capabilities} onUpgrade={setUpgradeFor} onConnected={fetchMe} />
+          <CapabilityCard channel="PEGA_CHAT" caps={u.capabilities} onUpgrade={setUpgradeFor} onConnected={fetchMe} />
           <CapabilityCard channel="INSTAGRAM_DM" caps={u.capabilities} onUpgrade={setUpgradeFor} onConnected={fetchMe} />
           <CapabilityCard channel="TELEGRAM" caps={u.capabilities} onUpgrade={setUpgradeFor} onConnected={fetchMe} />
           <CapabilityCard channel="EMAIL" caps={u.capabilities} onUpgrade={setUpgradeFor} onConnected={fetchMe} />

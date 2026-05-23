@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Lock, CheckCircle2, Mail, Calendar, Film, Newspaper, Webhook, Sparkles, Crown } from "lucide-react";
+import { Loader2, Lock, CheckCircle2, Mail, Calendar, Film, Newspaper, Webhook, Sparkles, Crown, MessageCircle } from "lucide-react";
 import {
   SiWhatsapp,
   SiInstagram,
@@ -21,7 +21,7 @@ export type CapabilityChannel =
   | "INSTAGRAM_POST" | "FACEBOOK_POST" | "LINKEDIN_POST" | "THREADS_POST" | "TWITTER_POST"
   | "TIKTOK_POST" | "PINTEREST_POST"
   | "BOOKING_CALENDAR" | "IMAGE_GEN" | "VIDEO_SCRIPT" | "DAILY_NEWS_BRIEFING"
-  | "WEBHOOK_INTEGRATION" | "WHITE_LABEL";
+  | "WEBHOOK_INTEGRATION" | "WHITE_LABEL" | "PEGA_CHAT";
 
 /**
  * Capability metadata. Brand logos use react-icons/si (SimpleIcons —
@@ -53,6 +53,7 @@ const CAP_META: Record<CapabilityChannel, {
   DAILY_NEWS_BRIEFING: { label: "Briefing Berita Harian", desc: "Update industri tiap pagi", minPlan: "Pro", iconBg: "#f59e0b", icon: <Newspaper size={18} color="white" /> },
   WEBHOOK_INTEGRATION: { label: "Webhook Integration", desc: "CRM / ERP / Notion", minPlan: "Business", iconBg: "#06b6d4", icon: <Webhook size={18} color="white" /> },
   WHITE_LABEL: { label: "White-Label", desc: "Brand sebagai milik Anda", minPlan: "Enterprise", iconBg: "#64748b", icon: <Crown size={18} color="white" /> },
+  PEGA_CHAT: { label: "Chat Personal Pega", desc: "Chat owner ke Pega via WA/Telegram", minPlan: "Trial", iconBg: "#8DA399", icon: <MessageCircle size={18} color="white" /> },
 };
 
 interface Props {
