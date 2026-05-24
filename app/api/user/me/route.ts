@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { PLAN_CAPABILITIES, isPlanKey, type PlanKey } from "@/lib/plans";
 
 /**
  * GET /api/user/me
@@ -61,6 +62,46 @@ export async function GET() {
     },
   });
   if (!user) return NextResponse.json({ message: "Not found" }, { status: 404 });
+
+  // Backfill: ensure UserCapability rows match plan grants. Cheap upsert pass.
+  // Uses PLAN_CAPABILITIES as source of truth so existing accounts get newly-added
+  // capabilities (e.g. PEGA_CHAT) without re-seed.
+  //
+  // Two cases handled:
+  //   (a) row missing entirely → create with grantedByPlan=true
+  //   (b) row exists but grantedByPlan=false (legacy from before cap was added
+  //       to plan) → flip grantedByPlan=true so dashboard unlocks it
+  const planTitle = user.subscription?.package?.title;
+  if (isPlanKey(planTitle as string)) {
+    const planKey = planTitle as PlanKey;
+    const granted = PLAN_CAPABILITIES[planKey];
+    const existingMap = new Map(user.capabilities.map((c) => [c.channel, c]));
+    const writes: Array<Promise<unknown>> = [];
+    for (const ch of granted) {
+      const existing = existingMap.get(ch);
+      if (!existing) {
+        writes.push(
+          prisma.userCapability.create({
+            data: { userId: user.id, channel: ch, enabled: false, grantedByPlan: true },
+          })
+        );
+      } else if (!existing.grantedByPlan) {
+        writes.push(
+          prisma.userCapability.update({
+            where: { userId_channel: { userId: user.id, channel: ch } },
+            data: { grantedByPlan: true },
+          })
+        );
+      }
+    }
+    if (writes.length > 0) {
+      await Promise.all(writes);
+      user.capabilities = await prisma.userCapability.findMany({
+        where: { userId: user.id },
+        select: { channel: true, enabled: true, grantedByPlan: true },
+      });
+    }
+  }
 
   // Compute real "connected" map from UserConnection (single source of truth
   // for whether a channel is actively wired up). UserCapability.enabled is

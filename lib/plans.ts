@@ -15,6 +15,7 @@ export type PlanKey = "Trial" | "Starter" | "Pro" | "Business" | "Enterprise";
 export const PLAN_CAPABILITIES: Record<PlanKey, CapabilityChannel[]> = {
   Trial: [
     // Trial = Pro-level for 3 days.
+    "PEGA_CHAT",
     "WHATSAPP",
     "INSTAGRAM_DM",
     "TELEGRAM",
@@ -30,11 +31,13 @@ export const PLAN_CAPABILITIES: Record<PlanKey, CapabilityChannel[]> = {
   Starter: [
     // CS bot 1 channel + caption gen + lead tagging + weekly report.
     // NO auto-posting medsos (LOCKED v2.0).
+    "PEGA_CHAT",
     "WHATSAPP",
     "INSTAGRAM_DM",
     "TELEGRAM",
   ],
   Pro: [
+    "PEGA_CHAT",
     "WHATSAPP",
     "INSTAGRAM_DM",
     "TELEGRAM",
@@ -49,6 +52,7 @@ export const PLAN_CAPABILITIES: Record<PlanKey, CapabilityChannel[]> = {
     "DAILY_NEWS_BRIEFING",
   ],
   Business: [
+    "PEGA_CHAT",
     "WHATSAPP",
     "INSTAGRAM_DM",
     "TELEGRAM",
@@ -68,6 +72,7 @@ export const PLAN_CAPABILITIES: Record<PlanKey, CapabilityChannel[]> = {
     "WEBHOOK_INTEGRATION",
   ],
   Enterprise: [
+    "PEGA_CHAT",
     "WHATSAPP",
     "INSTAGRAM_DM",
     "TELEGRAM",
