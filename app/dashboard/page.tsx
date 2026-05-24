@@ -49,20 +49,32 @@ export default function DashboardOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [upgradeFor, setUpgradeFor] = useState<{ channel: CapabilityChannel; minPlan: string } | null>(null);
 
-  const fetchMe = useCallback(async () => {
-    setLoading(true);
+  const fetchMe = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch("/api/user/me");
       if (!res.ok) throw new Error("Gagal memuat akun");
       setData(await res.json());
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Gagal memuat akun");
+      if (!silent) toast.error(err instanceof Error ? err.message : "Gagal memuat akun");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => { fetchMe(); }, [fetchMe]);
+
+  // Realtime: poll every 15s so connection-state events from upstream (Evolution
+  // disconnect, Telegram bind, Discord drop) reflect on dashboard without manual
+  // refresh. Silent refresh — no spinner, no toast on transient network blips.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchMe(true);
+      }
+    }, 15000);
+    return () => clearInterval(id);
+  }, [fetchMe]);
 
   if (loading) {
     return (

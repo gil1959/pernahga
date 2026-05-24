@@ -66,23 +66,36 @@ export async function GET() {
   // Backfill: ensure UserCapability rows match plan grants. Cheap upsert pass.
   // Uses PLAN_CAPABILITIES as source of truth so existing accounts get newly-added
   // capabilities (e.g. PEGA_CHAT) without re-seed.
+  //
+  // Two cases handled:
+  //   (a) row missing entirely → create with grantedByPlan=true
+  //   (b) row exists but grantedByPlan=false (legacy from before cap was added
+  //       to plan) → flip grantedByPlan=true so dashboard unlocks it
   const planTitle = user.subscription?.package?.title;
   if (isPlanKey(planTitle as string)) {
     const planKey = planTitle as PlanKey;
     const granted = PLAN_CAPABILITIES[planKey];
-    const existing = new Set(user.capabilities.map((c) => c.channel));
-    const missing = granted.filter((ch) => !existing.has(ch));
-    if (missing.length > 0) {
-      await prisma.$transaction(
-        missing.map((ch) =>
-          prisma.userCapability.upsert({
-            where: { userId_channel: { userId: user.id, channel: ch } },
-            update: { grantedByPlan: true },
-            create: { userId: user.id, channel: ch, enabled: false, grantedByPlan: true },
+    const existingMap = new Map(user.capabilities.map((c) => [c.channel, c]));
+    const writes: Array<Promise<unknown>> = [];
+    for (const ch of granted) {
+      const existing = existingMap.get(ch);
+      if (!existing) {
+        writes.push(
+          prisma.userCapability.create({
+            data: { userId: user.id, channel: ch, enabled: false, grantedByPlan: true },
           })
-        )
-      );
-      // Re-fetch capabilities after backfill
+        );
+      } else if (!existing.grantedByPlan) {
+        writes.push(
+          prisma.userCapability.update({
+            where: { userId_channel: { userId: user.id, channel: ch } },
+            data: { grantedByPlan: true },
+          })
+        );
+      }
+    }
+    if (writes.length > 0) {
+      await Promise.all(writes);
       user.capabilities = await prisma.userCapability.findMany({
         where: { userId: user.id },
         select: { channel: true, enabled: true, grantedByPlan: true },
