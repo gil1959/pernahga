@@ -78,6 +78,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           : [];
         const credits = isPlanKey(planTitle) ? PLAN_CREDITS[planTitle].monthly : pkg.monthlyCredits || 0;
 
+        // NOTE: capability sync below issues many sequential queries. Default
+        // Prisma tx timeout (5s) is too tight on Neon cold-start, so we bump
+        // timeout/maxWait via the second $transaction argument.
         await prisma.$transaction(async (tx) => {
           await tx.subscription.upsert({
             where: { userId: user.id },
@@ -126,6 +129,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
               });
             }
           }
+        }, {
+          // Neon cold-start + sequential capability upserts can exceed the
+          // 5s default. Bump generously so plan changes never throw
+          // "Transaction already closed" mid-loop.
+          maxWait: 15_000,
+          timeout: 30_000,
         });
 
         return NextResponse.json({ ok: true, message: `Paket diubah ke ${pkg.title}` });
