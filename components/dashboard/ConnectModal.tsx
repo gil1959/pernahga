@@ -63,7 +63,9 @@ export default function ConnectModal({ channel, meta, onClose, onSuccess }: Prop
         {channel === "DISCORD" && <DiscordFlow />}
         {channel === "EMAIL" && <EmailFlow />}
         {channel === "PEGA_CHAT" && <PegaChatFlow />}
-        {!["WHATSAPP", "TELEGRAM", "DISCORD", "EMAIL", "PEGA_CHAT"].includes(channel) && (
+        {(channel === "INSTAGRAM_DM" || channel === "INSTAGRAM_POST" || channel === "FACEBOOK_POST") && <MetaFlow channel={channel} />}
+        {channel === "THREADS_POST" && <ThreadsFlow />}
+        {!["WHATSAPP", "TELEGRAM", "DISCORD", "EMAIL", "PEGA_CHAT", "INSTAGRAM_DM", "INSTAGRAM_POST", "FACEBOOK_POST", "THREADS_POST"].includes(channel) && (
           <ManualRequest channel={channel} onSuccess={onSuccess} />
         )}
       </div>
@@ -295,6 +297,49 @@ function EmailFlow() {
       <a href="/api/user/connect/email/start"
         style={{ display: "block", padding: "0.85rem 1.5rem", backgroundColor: "#2D2D2D", color: "white", borderRadius: 10, textAlign: "center", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
         Connect dengan Google
+      </a>
+    </div>
+  );
+}
+
+// ---------------- META (IG DM / IG POST / FB POST) ----------------
+function MetaFlow({ channel }: { channel: CapabilityChannel }) {
+  const isDmOnly = channel === "INSTAGRAM_DM";
+  const isPostOnly = channel === "INSTAGRAM_POST" || channel === "FACEBOOK_POST";
+  // Default request both scopes biar user ga perlu reconnect kalau upgrade plan.
+  const features = isDmOnly ? "dm" : isPostOnly ? "post" : "dm,post";
+  const startUrl = `/api/user/connect/meta/start?features=${features}`;
+
+  return (
+    <div>
+      <p style={{ fontSize: "0.9rem", color: "#6b6b6b", marginBottom: "1rem" }}>
+        Pega akan minta izin akses ke <strong>Facebook Page</strong> dan <strong>Instagram Business</strong> kamu via OAuth resmi Meta. Pastikan IG kamu udah <em>Business / Creator</em> dan tersambung ke FB Page.
+      </p>
+      <div style={{ padding: "0.75rem 1rem", backgroundColor: "#fef3c7", borderRadius: 10, marginBottom: "1rem", fontSize: "0.78rem", color: "#78350f", lineHeight: 1.55 }}>
+        Belum punya FB Page? <a href="https://www.facebook.com/pages/create" target="_blank" rel="noopener" style={{ color: "#92400e", fontWeight: 700, textDecoration: "underline" }}>Bikin di sini</a>, lalu sambungin IG kamu via Settings &rarr; Linked Accounts.
+      </div>
+      <a href={startUrl}
+        style={{ display: "block", padding: "0.85rem 1.5rem", backgroundColor: "#1877F2", color: "white", borderRadius: 10, textAlign: "center", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
+        Connect dengan Facebook
+      </a>
+      <p style={{ fontSize: "0.72rem", color: "#9b9b9b", marginTop: "0.85rem", textAlign: "center", lineHeight: 1.55 }}>
+        Token disimpan terenkripsi (AES-256-GCM). Kamu bisa cabut akses kapan aja via{" "}
+        <a href="https://www.facebook.com/settings?tab=business_tools" target="_blank" rel="noopener" style={{ color: "#8DA399", textDecoration: "underline" }}>Meta Business Tools</a>.
+      </p>
+    </div>
+  );
+}
+
+// ---------------- THREADS ----------------
+function ThreadsFlow() {
+  return (
+    <div>
+      <p style={{ fontSize: "0.9rem", color: "#6b6b6b", marginBottom: "1.25rem" }}>
+        Threads pakai OAuth terpisah dari Instagram. Kamu bakal diarahkan ke threads.net untuk approve.
+      </p>
+      <a href="/api/user/connect/threads/start"
+        style={{ display: "block", padding: "0.85rem 1.5rem", backgroundColor: "#000000", color: "white", borderRadius: 10, textAlign: "center", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
+        Connect Threads
       </a>
     </div>
   );

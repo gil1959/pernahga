@@ -74,16 +74,32 @@ export const INTEGRATION_SCHEMAS: Record<IntegrationProvider, ProviderSchema> = 
   },
   META_BUSINESS: {
     provider: "META_BUSINESS",
-    displayName: "Meta Business (IG/FB/Threads)",
-    description: "IG Business + FB Page + Threads via Meta Embedded Signup. Butuh Meta Business Verification + app review.",
+    displayName: "Meta Business (Instagram + Facebook)",
+    description:
+      "IG Business + FB Page via Meta Business App. Butuh App Review + Business Verification. Semua credential di-isi di sini, jangan di Vercel env.",
     secretFields: [
       { key: "appSecret", label: "App Secret", placeholder: "abc123…", help: "Meta Developers → App → Settings → Basic" },
     ],
     publicFields: [
-      { key: "appId", label: "App ID", placeholder: "1234567890" },
-      { key: "businessId", label: "Business ID", placeholder: "9876543210" },
-      { key: "configId", label: "Embedded Signup Config ID", placeholder: "xxx", help: "Opsional sampai approval keluar" },
-      { key: "redirectUri", label: "Redirect URI", placeholder: "https://pernahga.com/api/connect/meta/callback" },
+      { key: "appId", label: "App ID", placeholder: "1234567890", help: "Meta Developers → App → Settings → Basic" },
+      { key: "businessId", label: "Business ID", placeholder: "9876543210", help: "Opsional. Meta Business Manager → Settings → Business Info" },
+      { key: "redirectUri", label: "OAuth Redirect URI", placeholder: "https://www.pernahga.com/api/connect/meta/callback", help: "Daftarkan PERSIS URL ini di Facebook Login → Valid OAuth Redirect URIs" },
+      { key: "webhookUrl", label: "Webhook URL", placeholder: "https://www.pernahga.com/api/webhook/meta", help: "Copy URL ini ke Meta Webhooks → Callback URL (read-only display)" },
+      { key: "webhookVerifyToken", label: "Webhook Verify Token", placeholder: "random string min 32 char", help: "Generate string random sendiri. Masukin nilai yang sama di Meta Webhooks → Verify Token" },
+      { key: "configId", label: "Embedded Signup Config ID", placeholder: "opsional", help: "Opsional sampai approval keluar (Meta → Use Cases → Embedded Signup)" },
+    ],
+  },
+  THREADS_BUSINESS: {
+    provider: "THREADS_BUSINESS",
+    displayName: "Threads (App Terpisah)",
+    description:
+      "Threads pakai Meta App tersendiri (use case 'Threads API'). Bikin app baru di developers.facebook.com, isi credential di sini.",
+    secretFields: [
+      { key: "appSecret", label: "App Secret", placeholder: "abc123…", help: "Threads App → Settings → Basic" },
+    ],
+    publicFields: [
+      { key: "appId", label: "App ID", placeholder: "1234567890", help: "Threads App → Settings → Basic" },
+      { key: "redirectUri", label: "OAuth Redirect URI", placeholder: "https://www.pernahga.com/api/connect/threads/callback", help: "Daftarkan PERSIS URL ini di Threads App → Use Cases → Threads API → OAuth Redirect URIs" },
     ],
   },
 };
@@ -247,6 +263,9 @@ export async function testIntegration(
         result = await testEvolution(publicFields.baseUrl, secrets.apiKey);
         break;
       case "META_BUSINESS":
+        result = await testMeta(publicFields.appId, secrets.appSecret);
+        break;
+      case "THREADS_BUSINESS":
         result = await testMeta(publicFields.appId, secrets.appSecret);
         break;
       default:
