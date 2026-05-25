@@ -317,7 +317,8 @@ enum IntegrationProvider {
   TELEGRAM_PEGA      // central bot (Opsi 1)
   GOOGLE_OAUTH       // email connect via Google
   WHATSAPP_EVOLUTION // self-hosted Evolution API instance
-  META_BUSINESS      // IG/FB/Threads via Meta Embedded Signup
+  META_BUSINESS      // IG/FB via Meta Business App (FB Login + IG Graph)
+  THREADS_BUSINESS   // Threads pakai App terpisah (use case Threads API)
 }
 
 enum IntegrationStatus {

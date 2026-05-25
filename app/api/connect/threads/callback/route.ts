@@ -5,7 +5,7 @@
  *   → Save UserConnection (channel: THREADS_POST).
  */
 import { NextResponse } from "next/server";
-import { saveUserConnection } from "@/lib/connect-helpers";
+import { loadActiveCreds, saveUserConnection } from "@/lib/connect-helpers";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import {
@@ -48,12 +48,13 @@ export async function GET(req: Request) {
   }
 
   try {
-    const appId = process.env.META_THREADS_APP_ID;
-    const appSecret = process.env.META_THREADS_APP_SECRET;
+    const creds = await loadActiveCreds("THREADS_BUSINESS");
+    const appId = creds.publicFields.appId;
+    const appSecret = creds.secrets.appSecret;
     const redirectUri =
-      process.env.META_THREADS_REDIRECT_URI || `${HOME_URL}/api/connect/threads/callback`;
+      creds.publicFields.redirectUri || `${HOME_URL}/api/connect/threads/callback`;
     if (!appId || !appSecret) {
-      throw new Error("Threads env credentials belum diset (META_THREADS_APP_ID / SECRET)");
+      throw new Error("Threads credentials belum diset di /admin/integrations");
     }
 
     // 1. Tukar code → short-lived
@@ -78,7 +79,7 @@ export async function GET(req: Request) {
     await saveUserConnection({
       userId,
       channel: "THREADS_POST",
-      provider: "META_BUSINESS",
+      provider: "THREADS_BUSINESS",
       externalId: profile.id,
       label: `@${profile.username}`,
       secrets: {

@@ -33,17 +33,23 @@ export async function GET(req: Request) {
     return NextResponse.json({ message: "Meta credentials belum lengkap" }, { status: 503 });
   }
 
+  // Threads pakai App terpisah, ambil dari provider THREADS_BUSINESS.
+  const threadsCreds = await getDecryptedCredentials("THREADS_BUSINESS");
+  const threadsBlock = threadsCreds && threadsCreds.enabled
+    ? {
+        appId: threadsCreds.publicFields?.appId || null,
+        appSecret: threadsCreds.secrets?.appSecret || null,
+        redirectUri: threadsCreds.publicFields?.redirectUri || null,
+      }
+    : null;
+
   return NextResponse.json({
     appId,
     appSecret,
     businessId: creds.publicFields?.businessId || null,
     configId: creds.publicFields?.configId || null,
     redirectUri: creds.publicFields?.redirectUri || null,
-    webhookVerifyToken: process.env.META_WEBHOOK_VERIFY_TOKEN || null,
-    threads: {
-      appId: process.env.META_THREADS_APP_ID || null,
-      appSecret: process.env.META_THREADS_APP_SECRET || null,
-      redirectUri: process.env.META_THREADS_REDIRECT_URI || null,
-    },
+    webhookVerifyToken: creds.publicFields?.webhookVerifyToken || null,
+    threads: threadsBlock,
   });
 }

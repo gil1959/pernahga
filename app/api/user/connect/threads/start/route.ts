@@ -2,12 +2,12 @@
  * GET /api/connect/threads/start
  *   → Redirect user ke Threads OAuth.
  *   → Threads pakai app terpisah dari IG/FB Meta (graph.threads.net).
- *   → Credentials via env: META_THREADS_APP_ID + META_THREADS_APP_SECRET.
+ *   → Credentials via admin vault provider THREADS_BUSINESS (BUKAN env).
  *   → Redirect URI: https://www.pernahga.com/api/connect/threads/callback
  */
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireCapability } from "@/lib/connect-helpers";
+import { loadActiveCreds, requireCapability, IntegrationDisabledError } from "@/lib/connect-helpers";
 import crypto from "node:crypto";
 
 const STATE_COOKIE = "threads_oauth_state";
@@ -23,11 +23,12 @@ export async function GET() {
   try {
     await requireCapability(userId, "THREADS_POST");
 
-    const appId = process.env.META_THREADS_APP_ID;
+    const creds = await loadActiveCreds("THREADS_BUSINESS");
+    const appId = creds.publicFields.appId;
     const redirectUri =
-      process.env.META_THREADS_REDIRECT_URI || `${HOME_URL}/api/connect/threads/callback`;
+      creds.publicFields.redirectUri || `${HOME_URL}/api/connect/threads/callback`;
     if (!appId) {
-      throw new Error("Threads belum diconfig (env META_THREADS_APP_ID)");
+      throw new Error("Threads belum diconfig di /admin/integrations");
     }
 
     const state = crypto.randomBytes(16).toString("hex");
@@ -50,6 +51,11 @@ export async function GET() {
     });
     return res;
   } catch (err: unknown) {
+    if (err instanceof IntegrationDisabledError) {
+      return NextResponse.redirect(
+        `${HOME_URL}/dashboard?error=threads_disabled`
+      );
+    }
     return NextResponse.redirect(
       `${HOME_URL}/dashboard?error=threads&msg=${encodeURIComponent(err instanceof Error ? err.message : "Gagal")}`
     );

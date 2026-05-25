@@ -28,9 +28,15 @@ export async function GET(req: Request) {
   const token = url.searchParams.get("hub.verify_token");
   const challenge = url.searchParams.get("hub.challenge");
 
-  const expected = process.env.META_WEBHOOK_VERIFY_TOKEN || "";
+  // Read verify token from admin vault, NOT process.env.
+  // Admin set it via /admin/integrations → META_BUSINESS → webhookVerifyToken.
+  const creds = await getDecryptedCredentials("META_BUSINESS");
+  const expected = creds?.publicFields?.webhookVerifyToken || "";
   if (!expected) {
-    return NextResponse.json({ message: "Webhook verify token not configured" }, { status: 503 });
+    return NextResponse.json(
+      { message: "Webhook verify token belum di-isi di /admin/integrations" },
+      { status: 503 }
+    );
   }
   if (mode === "subscribe" && token === expected && challenge) {
     // Meta requires plain text body, not JSON.
