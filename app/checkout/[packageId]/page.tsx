@@ -7,10 +7,12 @@ import { ArrowLeft } from "lucide-react";
 export default async function CheckoutPage({
   params,
 }: {
-  params: { packageId: string };
+  params: Promise<{ packageId: string }>;
 }) {
+  const { packageId } = await params;
+
   const pkg = await prisma.package.findUnique({
-    where: { id: params.packageId },
+    where: { id: packageId },
   });
 
   if (!pkg) {
