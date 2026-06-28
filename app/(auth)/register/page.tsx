@@ -6,8 +6,12 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { signIn } from "next-auth/react";
 import { toast } from "react-hot-toast";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
+
+const MySwal = withReactContent(Swal);
 
 export default function RegisterPage() {
   const t = useTranslations("auth");
@@ -43,7 +47,12 @@ export default function RegisterPage() {
       return;
     }
     if (!formData.password || formData.password.length < 8) {
-      toast.error("Kata sandi minimal 8 karakter");
+      MySwal.fire({
+        icon: "error",
+        title: "Input Tidak Valid",
+        text: "Kata sandi minimal 8 karakter",
+        confirmButtonColor: "#8DA399",
+      });
       return;
     }
 
@@ -65,10 +74,20 @@ export default function RegisterPage() {
 
       setMaskedPhone(data.phone || "");
       setOtpSent(true);
-      toast.success("Kode OTP telah dikirim ke nomor HP Anda");
+      MySwal.fire({
+        icon: "success",
+        title: "OTP Terkirim",
+        text: "Kode OTP telah dikirim ke nomor HP Anda via WhatsApp",
+        confirmButtonColor: "#8DA399",
+      });
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Terjadi kesalahan";
-      toast.error(msg);
+      MySwal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: msg,
+        confirmButtonColor: "#8DA399",
+      });
     } finally {
       setIsSendingOtp(false);
     }
@@ -92,7 +111,14 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Terjadi kesalahan");
 
-      toast.success("Registrasi berhasil, mengarahkan ke setup Pega...");
+      MySwal.fire({
+        icon: "success",
+        title: "Berhasil!",
+        text: "Registrasi berhasil, mengarahkan ke setup...",
+        confirmButtonColor: "#8DA399",
+        timer: 2000,
+        showConfirmButton: false,
+      });
 
       // Auto sign-in pakai credentials yang baru saja di-create.
       const signInRes = await signIn("credentials", {
@@ -113,7 +139,12 @@ export default function RegisterPage() {
       }
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Terjadi kesalahan";
-      toast.error(msg);
+      MySwal.fire({
+        icon: "error",
+        title: "Gagal Registrasi",
+        text: msg,
+        confirmButtonColor: "#8DA399",
+      });
     } finally {
       setIsLoading(false);
     }

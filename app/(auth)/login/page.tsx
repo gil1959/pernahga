@@ -6,8 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "react-hot-toast";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 import { ArrowLeft, Loader2, Mail, KeyRound, Eye, EyeOff, ChevronLeft, User, X } from "lucide-react";
 import Logo from "@/components/ui/Logo";
+
+const MySwal = withReactContent(Swal);
 
 type Modal = null | "forgot_password" | "forgot_username";
 type ForgotStep = "email" | "otp" | "reset" | "done";
@@ -53,13 +57,31 @@ export default function LoginPage() {
         password: formData.password,
       });
       if (res?.error) {
-        toast.error("Email atau kata sandi salah");
+        MySwal.fire({
+          icon: "error",
+          title: "Gagal Masuk",
+          text: "Email atau kata sandi salah",
+          confirmButtonColor: "#8DA399",
+        });
       } else {
-        toast.success("Berhasil masuk");
-        router.push(callbackUrl);
+        MySwal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Anda berhasil masuk",
+          confirmButtonColor: "#8DA399",
+          timer: 2000,
+          showConfirmButton: false
+        }).then(() => {
+          router.push(callbackUrl);
+        });
       }
     } catch {
-      toast.error("Terjadi kesalahan, silakan coba lagi");
+      MySwal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Terjadi kesalahan, silakan coba lagi",
+        confirmButtonColor: "#8DA399",
+      });
     } finally {
       setIsLoading(false);
     }

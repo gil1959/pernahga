@@ -2,8 +2,12 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ShieldCheck, Tag } from "lucide-react";
+import { Check, ShieldCheck, Tag, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 interface PackageData {
   id: string;
@@ -49,7 +53,12 @@ export default function CheckoutForm({ pkg }: { pkg: PackageData }) {
       
       if (!res.ok) {
         if (res.status === 401) {
-          toast.error("Silakan login terlebih dahulu");
+          MySwal.fire({
+            icon: "warning",
+            title: "Belum Login",
+            text: "Silakan login terlebih dahulu",
+            confirmButtonColor: "#8DA399",
+          });
           // Redirect to login with callback
           router.push(`/login?callbackUrl=/checkout/${pkg.id}`);
           return;
@@ -60,10 +69,20 @@ export default function CheckoutForm({ pkg }: { pkg: PackageData }) {
       if (data.redirectUrl) {
         window.location.href = data.redirectUrl;
       } else {
-        toast.error("Gagal mendapatkan link pembayaran");
+        MySwal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: "Gagal mendapatkan link pembayaran",
+          confirmButtonColor: "#8DA399",
+        });
       }
     } catch (err: any) {
-      toast.error(err.message || "Gagal memproses pembayaran");
+      MySwal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: err.message || "Gagal memproses pembayaran",
+        confirmButtonColor: "#8DA399",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +159,7 @@ export default function CheckoutForm({ pkg }: { pkg: PackageData }) {
             opacity: isLoading ? 0.7 : 1
           }}
         >
-          <ShieldCheck size={20} />
+          {isLoading ? <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} /> : <ShieldCheck size={20} />}
           {isLoading ? "Memproses..." : "Bayar Sekarang"}
         </button>
         <p style={{ textAlign: "center", fontSize: "0.8rem", color: "#9b9b9b", marginTop: "1rem" }}>
