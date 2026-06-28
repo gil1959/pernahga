@@ -153,6 +153,34 @@ const sections: { title: string; icon: React.ReactNode; fields: Field[] }[] = [
       },
     ],
   },
+  {
+    title: "Pengaturan Pembayaran (Midtrans)",
+    icon: <Settings size={18} />,
+    fields: [
+      {
+        key: "midtransEnabled",
+        label: "Aktifkan Midtrans",
+        placeholder: "true",
+        hint: "Isi 'true' untuk aktifkan Midtrans, 'false' untuk nonaktifkan.",
+      },
+      {
+        key: "midtransIsProduction",
+        label: "Mode Production",
+        placeholder: "false",
+        hint: "Isi 'true' jika Production, 'false' jika Sandbox.",
+      },
+      {
+        key: "midtransServerKey",
+        label: "Midtrans Server Key",
+        placeholder: "SB-Mid-server-xxxx",
+      },
+      {
+        key: "midtransClientKey",
+        label: "Midtrans Client Key",
+        placeholder: "SB-Mid-client-xxxx",
+      },
+    ],
+  },
 ];
 
 export default function AdminSettingsPage() {

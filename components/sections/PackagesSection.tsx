@@ -84,7 +84,7 @@ export default function PackagesSection({
             const isFounding = isFoundingPackage(pkg);
             const ctaHref = isCustom && (lowerPrice === "custom")
               ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Halo PernahGa! Saya tertarik paket ${pkg.title} (Enterprise) dan ingin diskusi lebih lanjut.`)}`
-              : "/register";
+              : `/checkout/${pkg.id}`;
             const ctaTarget = isCustom && (lowerPrice === "custom") ? "_blank" : undefined;
 
             const formatPrice = (priceStr: string) => {
