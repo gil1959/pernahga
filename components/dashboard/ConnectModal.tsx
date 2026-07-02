@@ -1,105 +1,45 @@
-"use client";
-
-/**
- * Smart Connect Modal — chooses the right flow based on channel:
- *  - WHATSAPP    → QR code via Evolution API
- *  - TELEGRAM    → 2 cards: Bot Pega (1-klik) | Bot Brand (2 menit, paste token)
- *  - DISCORD     → 1-klik OAuth Add to Server
- *  - EMAIL       → 1-klik OAuth Google
- *  - others      → manual ConnectionRequest (legacy fallback)
- */
 import { useState, useEffect, useCallback } from "react";
+import { CheckCircle2, QrCode, Sparkles, Send, MessagesSquare, Settings } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { Loader2, X, Bot, ArrowRight, Sparkles, RefreshCw, CheckCircle2, ExternalLink, Copy } from "lucide-react";
-import type { CapabilityChannel } from "@prisma/client";
+import { QRCodeSVG } from "qrcode.react";
 
-interface Props {
-  channel: CapabilityChannel;
-  meta: { label: string; iconBg: string; icon: React.ReactNode };
-  onClose: () => void;
-  onSuccess: () => void;
+export function ConnectModal({ capability, onSuccess, onClose }: { capability: any; onSuccess: () => void; onClose: () => void }) {
+  if (capability.channel === "WHATSAPP") return <WhatsAppConnect onSuccess={onSuccess} />;
+  if (capability.channel === "TELEGRAM") return <TelegramConnect onSuccess={onSuccess} />;
+  return <ManualConnect channel={capability.channel} onSuccess={onSuccess} />;
 }
 
-type View = "menu" | "wa-qr" | "tg-options" | "tg-option2" | "submitting";
-
-export default function ConnectModal({ channel, meta, onClose, onSuccess }: Props) {
-  const [view, setView] = useState<View>(() => initialView(channel));
-  const [busy, setBusy] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  return (
-    <div onClick={onClose}
-      style={{ position: "fixed", inset: 0, backgroundColor: "rgba(45,45,45,0.55)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
-      <div onClick={(e) => e.stopPropagation()}
-        style={{ backgroundColor: "white", borderRadius: 16, maxWidth: 520, width: "100%", padding: "2rem", maxHeight: "90vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: meta.iconBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {meta.icon}
-            </div>
-            <div>
-              <h2 style={{ fontSize: "1.15rem", fontWeight: 800, color: "#2D2D2D" }}>Connect {meta.label}</h2>
-              <p style={{ color: "#9b9b9b", fontSize: "0.78rem" }}>Pega akan handle channel ini buat Anda</p>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#6b6b6b" }}>
-            <X size={20} />
-          </button>
-        </div>
-
-        {errorMsg && (
-          <div style={{ padding: "0.75rem 1rem", borderRadius: 10, backgroundColor: "#fef2f2", color: "#991b1b", fontSize: "0.85rem", marginBottom: "1rem" }}>
-            {errorMsg}
-          </div>
-        )}
-
-        {channel === "WHATSAPP" && <WhatsAppFlow setBusy={setBusy} setError={setErrorMsg} onSuccess={onSuccess} />}
-        {channel === "TELEGRAM" && view === "tg-options" && (
-          <TelegramOptions onPickOption2={() => setView("tg-option2")} setError={setErrorMsg} onSuccess={onSuccess} />
-        )}
-        {channel === "TELEGRAM" && view === "tg-option2" && (
-          <TelegramOption2 onBack={() => setView("tg-options")} setError={setErrorMsg} onSuccess={onSuccess} />
-        )}
-        {channel === "DISCORD" && <DiscordFlow />}
-        {channel === "EMAIL" && <EmailFlow />}
-        {channel === "PEGA_CHAT" && <PegaChatFlow />}
-        {(channel === "INSTAGRAM_DM" || channel === "INSTAGRAM_POST" || channel === "FACEBOOK_POST") && <MetaFlow channel={channel} />}
-        {channel === "THREADS_POST" && <ThreadsFlow />}
-        {!["WHATSAPP", "TELEGRAM", "DISCORD", "EMAIL", "PEGA_CHAT", "INSTAGRAM_DM", "INSTAGRAM_POST", "FACEBOOK_POST", "THREADS_POST"].includes(channel) && (
-          <ManualRequest channel={channel} onSuccess={onSuccess} />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function initialView(channel: CapabilityChannel): View {
-  if (channel === "TELEGRAM") return "tg-options";
-  return "menu";
-}
-
-// ---------------- WHATSAPP ----------------
-function WhatsAppFlow({ setBusy, setError, onSuccess }: { setBusy: (b: boolean) => void; setError: (m: string | null) => void; onSuccess: () => void }) {
+// ----------------------------------
+// WhatsApp Flow
+// ----------------------------------
+function WhatsAppConnect({ onSuccess }: { onSuccess: () => void }) {
   const [qr, setQr] = useState<string | null>(null);
   const [pairing, setPairing] = useState<string | null>(null);
   const [instanceName, setInstanceName] = useState<string | null>(null);
-  const [state, setState] = useState<string>("loading");
+  const [state, setState] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const startConnect = useCallback(async () => {
-    setBusy(true);
-    setError(null);
-    setState("loading");
+    setBusy(true); setError(null);
     try {
       const res = await fetch("/api/user/connect/whatsapp", { method: "POST" });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.message || "Gagal");
+      const rawText = await res.text();
+      let d;
+      try {
+        d = JSON.parse(rawText);
+      } catch (e) {
+        throw new Error(`Invalid JSON: ${rawText.slice(0, 500)}`);
+      }
+      
+      if (!res.ok) throw new Error(d.message || JSON.stringify(d).slice(0, 100));
       setQr(d.qrCode || null);
       setPairing(d.pairingCode || null);
       setInstanceName(d.instanceName);
       setState("connecting");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Gagal");
+      setError(e instanceof Error ? e.message : "Gagal parse response");
     } finally {
       setBusy(false);
     }
@@ -107,7 +47,6 @@ function WhatsAppFlow({ setBusy, setError, onSuccess }: { setBusy: (b: boolean) 
 
   useEffect(() => { startConnect(); }, [startConnect, refreshKey]);
 
-  // Poll status every 3s
   useEffect(() => {
     if (!instanceName || state === "open") return;
     const t = setInterval(async () => {
@@ -137,46 +76,72 @@ function WhatsAppFlow({ setBusy, setError, onSuccess }: { setBusy: (b: boolean) 
   return (
     <div>
       <p style={{ fontSize: "0.9rem", color: "#6b6b6b", marginBottom: "1rem" }}>
-        <strong>Cara scan:</strong> WhatsApp di HP → Settings → Linked Devices → Link a device → arahkan kamera ke QR di bawah.
+        Pega akan handle channel ini buat Anda
       </p>
-      <div style={{ display: "flex", justifyContent: "center", padding: "1rem", border: "1px dashed #ede9df", borderRadius: 12, marginBottom: "1rem", minHeight: 240, alignItems: "center" }}>
-        {qr ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={qr.startsWith("data:") ? qr : `data:image/png;base64,${qr}`} alt="QR Code WhatsApp" style={{ maxWidth: 220 }} />
-        ) : (
-          <Loader2 size={32} style={{ animation: "spin 1s linear infinite", color: "#8DA399" }} />
-        )}
-      </div>
-      {pairing && (
-        <div style={{ padding: "0.75rem 1rem", backgroundColor: "#f3f1ec", borderRadius: 10, marginBottom: "1rem", textAlign: "center" }}>
-          <div style={{ fontSize: "0.72rem", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>Atau pakai kode pairing</div>
-          <div style={{ fontSize: "1.25rem", fontFamily: "monospace", fontWeight: 800, color: "#2D2D2D", marginTop: 4, letterSpacing: "0.08em" }}>{pairing}</div>
+      {error && (
+        <div style={{ padding: "0.8rem", background: "#fee2e2", color: "#b91c1c", borderRadius: 10, fontSize: "0.8rem", marginBottom: "1rem", whiteSpace: "pre-wrap", overflowX: "auto" }}>
+          <b>Error dari Server:</b><br/>{error}
         </div>
       )}
-      <div style={{ fontSize: "0.78rem", color: "#9b9b9b", textAlign: "center", marginBottom: "1rem" }}>
-        Status: <strong style={{ color: state === "open" ? "#10b981" : "#f59e0b" }}>{state}</strong>
+      <div style={{ padding: "1.5rem", border: "1px solid #ede9df", borderRadius: 16, background: "#faf9f6", display: "flex", flexDirection: "column", alignItems: "center", minHeight: 250, justifyContent: "center" }}>
+        {busy ? (
+          <p style={{ fontSize: "0.9rem", color: "#6b6b6b" }}>Loading QR Code...</p>
+        ) : qr ? (
+          <>
+            <div style={{ background: "white", padding: "1rem", borderRadius: 12, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+              {qr.startsWith("data:") ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={qr} alt="QR Code" style={{ width: 180, height: 180, objectFit: "contain" }} />
+              ) : (
+                <QRCodeSVG value={qr} size={180} />
+              )}
+            </div>
+            {pairing && (
+              <p style={{ marginTop: "1rem", fontSize: "0.85rem", color: "#6b6b6b" }}>Atau Pairing Code: <strong style={{ color: "#2D2D2D" }}>{pairing}</strong></p>
+            )}
+            <p style={{ marginTop: "1.5rem", fontSize: "0.85rem", color: "#6b6b6b", textAlign: "center", lineHeight: 1.5 }}>
+              Cara scan: WhatsApp di HP → Settings → Linked Devices → Link a device → arahkan kamera ke QR di atas.
+            </p>
+            <p style={{ marginTop: "0.8rem", fontSize: "0.8rem", color: "#999", fontWeight: 700 }}>
+              Status: {state || "connecting..."}
+            </p>
+          </>
+        ) : !error ? (
+          <p style={{ fontSize: "0.9rem", color: "#6b6b6b" }}>Gagal generate QR.</p>
+        ) : null}
       </div>
-      <button onClick={() => setRefreshKey((k) => k + 1)}
-        style={{ width: "100%", padding: "0.75rem", borderRadius: 10, border: "1px solid #ede9df", backgroundColor: "white", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        <RefreshCw size={14} /> Refresh QR
+      <button
+        onClick={() => setRefreshKey(k => k + 1)}
+        disabled={busy}
+        style={{
+          width: "100%", padding: "0.8rem", background: "#f1f1f1", color: "#2D2D2D", border: "none", borderRadius: 12, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", marginTop: "1rem"
+        }}
+      >
+        Refresh QR
       </button>
-      <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
 
-// ---------------- TELEGRAM ----------------
-function TelegramOptions({ onPickOption2, setError, onSuccess }: { onPickOption2: () => void; setError: (m: string | null) => void; onSuccess: () => void }) {
+// ----------------------------------
+// Telegram Flow
+// ----------------------------------
+function TelegramConnect({ onSuccess }: { onSuccess: () => void }) {
+  const [view, setView] = useState<"pick" | "botfather">("pick");
+  const [botToken, setBotToken] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const cardButtonStyle = (bg: string) => ({
+    width: "100%", padding: "1.2rem", background: bg, border: "none", borderRadius: 16, color: "white", cursor: "pointer", textAlign: "left" as const, transition: "transform 0.2s"
+  });
+
   const pickOption1 = async () => {
-    setBusy(true);
-    setError(null);
+    setBusy(true); setError(null);
     try {
-      const res = await fetch("/api/user/connect/telegram?variant=option1");
+      const res = await fetch("/api/user/connect/telegram-bot", { method: "POST" });
       const d = await res.json();
       if (!res.ok) throw new Error(d.message || "Gagal");
-      // Open Telegram in new tab
       window.open(d.startGroupUrl, "_blank");
       toast.success("Telegram terbuka. Invite bot ke chat/group Anda.");
       onSuccess();
@@ -187,51 +152,50 @@ function TelegramOptions({ onPickOption2, setError, onSuccess }: { onPickOption2
     }
   };
 
+  if (view === "botfather") {
+    return <TelegramBotFatherFlow onSuccess={onSuccess} onBack={() => setView("pick")} />;
+  }
+
   return (
     <div>
       <p style={{ fontSize: "0.9rem", color: "#6b6b6b", marginBottom: "1rem" }}>Pilih cara connect Telegram:</p>
+      {error && <p style={{ color: "#b91c1c", fontSize: "0.85rem", marginBottom: "1rem" }}>{error}</p>}
       <div style={{ display: "grid", gap: 12 }}>
-        <button onClick={pickOption1} disabled={busy}
-          style={cardButtonStyle("#26A5E4")}>
+        <button onClick={pickOption1} disabled={busy} style={cardButtonStyle("#26A5E4")}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Sparkles size={24} color="white" />
             <div style={{ textAlign: "left", flex: 1 }}>
-              <div style={{ fontWeight: 800, color: "white" }}>Connect Cepat (Bot Pega)</div>
-              <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.85)", marginTop: 2 }}>1 klik · bot bernama Pega · 30 detik</div>
+              <div style={{ fontWeight: 800, fontSize: "1.05rem" }}>Pake Bot Pega (Instan)</div>
+              <div style={{ fontSize: "0.85rem", opacity: 0.9, marginTop: 4 }}>Tinggal invite bot official Pega ke group/chat Anda.</div>
             </div>
-            {busy ? <Loader2 size={18} color="white" style={{ animation: "spin 1s linear infinite" }} /> : <ArrowRight size={18} color="white" />}
           </div>
         </button>
-        <button onClick={onPickOption2}
-          style={cardButtonStyle("white", "#2D2D2D", "1px solid #ede9df")}>
+        <button onClick={() => setView("botfather")} style={cardButtonStyle("#2D2D2D")}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Bot size={24} color="#2D2D2D" />
+            <Settings size={24} color="white" />
             <div style={{ textAlign: "left", flex: 1 }}>
-              <div style={{ fontWeight: 800, color: "#2D2D2D" }}>Bikin Bot Brand Anda</div>
-              <div style={{ fontSize: "0.78rem", color: "#6b6b6b", marginTop: 2 }}>2 menit · bot pakai nama bisnis Anda · branding terjaga</div>
+              <div style={{ fontWeight: 800, fontSize: "1.05rem" }}>Bikin Bot Sendiri (Custom)</div>
+              <div style={{ fontSize: "0.85rem", opacity: 0.9, marginTop: 4 }}>Bikin bot dengan nama dan foto brand Anda sendiri.</div>
             </div>
-            <ArrowRight size={18} color="#2D2D2D" />
           </div>
         </button>
       </div>
-      <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
 
-function TelegramOption2({ onBack, setError, onSuccess }: { onBack: () => void; setError: (m: string | null) => void; onSuccess: () => void }) {
+function TelegramBotFatherFlow({ onSuccess, onBack }: { onSuccess: () => void; onBack: () => void }) {
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
-  const [step, setStep] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = async () => {
-    setBusy(true);
-    setError(null);
+  const submitToken = async () => {
+    if (!token.trim()) return;
+    setBusy(true); setError(null);
     try {
-      const res = await fetch("/api/user/connect/telegram", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ botToken: token }),
+      const res = await fetch("/api/user/connect/telegram-bot", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: token.trim() })
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.message || "Gagal");
@@ -248,137 +212,30 @@ function TelegramOption2({ onBack, setError, onSuccess }: { onBack: () => void; 
     <div>
       <button onClick={onBack} style={{ background: "transparent", border: "none", color: "#6b6b6b", cursor: "pointer", fontSize: "0.85rem", marginBottom: "1rem" }}>← Kembali</button>
       <h3 style={{ fontSize: "1rem", fontWeight: 800, color: "#2D2D2D", marginBottom: "0.5rem" }}>Bikin Bot dengan Brand Anda</h3>
+      {error && <p style={{ color: "#b91c1c", fontSize: "0.85rem", marginBottom: "1rem" }}>{error}</p>}
       <p style={{ fontSize: "0.85rem", color: "#6b6b6b", marginBottom: "1.25rem" }}>Cuma 4 step, sekitar 2 menit:</p>
       <ol style={{ paddingLeft: "1.2rem", marginBottom: "1.5rem", display: "grid", gap: 10 }}>
-        <li style={{ fontSize: "0.85rem", color: "#2D2D2D" }}>
-          Buka Telegram, chat ke{" "}
-          <a href="https://t.me/BotFather" target="_blank" rel="noopener" style={{ color: "#26A5E4", fontWeight: 700, textDecoration: "underline" }}>
-            @BotFather <ExternalLink size={11} style={{ display: "inline" }} />
-          </a>
-        </li>
-        <li style={{ fontSize: "0.85rem", color: "#2D2D2D" }}>Ketik <code style={codeStyle}>/newbot</code>, kasih nama bot (contoh: &quot;Mira Coaching&quot;)</li>
-        <li style={{ fontSize: "0.85rem", color: "#2D2D2D" }}>Kasih username bot (harus akhiran <code style={codeStyle}>bot</code>, contoh: <code style={codeStyle}>MiraCoaching_bot</code>)</li>
-        <li style={{ fontSize: "0.85rem", color: "#2D2D2D" }}>Copy token yang BotFather kirim, paste di sini:</li>
+        <li style={{ fontSize: "0.85rem", color: "#2D2D2D" }}>Buka Telegram, chat ke <a href="https://t.me/BotFather" target="_blank" rel="noopener" style={{ color: "#26A5E4", fontWeight: 700, textDecoration: "underline" }}>@BotFather</a></li>
+        <li style={{ fontSize: "0.85rem", color: "#2D2D2D" }}>Ketik <code style={{ background: "#ede9df", padding: "2px 6px", borderRadius: 4 }}>/newbot</code> lalu ikutin instruksinya</li>
+        <li style={{ fontSize: "0.85rem", color: "#2D2D2D" }}>BotFather bakal kasih pesan panjang yang ada <strong>HTTP API Token</strong></li>
+        <li style={{ fontSize: "0.85rem", color: "#2D2D2D" }}>Copy token itu dan paste di bawah ini:</li>
       </ol>
-      <input value={token} onChange={(e) => setToken(e.target.value)}
-        placeholder="123456789:ABCxxxYYYzzz..."
-        style={{ width: "100%", padding: "0.75rem 1rem", border: "1px solid #ede9df", borderRadius: 10, fontFamily: "monospace", fontSize: "0.85rem", marginBottom: "1rem" }} />
-      <button onClick={submit} disabled={busy || !token}
-        style={{ width: "100%", padding: "0.85rem", backgroundColor: "#26A5E4", color: "white", border: "none", borderRadius: 10, fontWeight: 700, fontSize: "0.9rem", cursor: token ? "pointer" : "not-allowed", opacity: token ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        {busy && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
-        Test & Connect
-      </button>
-    </div>
-  );
-}
-
-// ---------------- DISCORD ----------------
-function DiscordFlow() {
-  return (
-    <div>
-      <p style={{ fontSize: "0.9rem", color: "#6b6b6b", marginBottom: "1.25rem" }}>
-        Pega akan join ke server Discord Anda dengan 1 klik via Discord OAuth. Anda pilih server, klik Authorize, selesai.
-      </p>
-      <a href="/api/user/connect/discord/start"
-        style={{ display: "block", padding: "0.85rem 1.5rem", backgroundColor: "#5865F2", color: "white", borderRadius: 10, textAlign: "center", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
-        Add Pega to Discord Server
-      </a>
-    </div>
-  );
-}
-
-// ---------------- EMAIL ----------------
-function EmailFlow() {
-  return (
-    <div>
-      <p style={{ fontSize: "0.9rem", color: "#6b6b6b", marginBottom: "1.25rem" }}>
-        Login dengan Google untuk kasih izin Pega kirim & baca email. Aman, pakai OAuth resmi.
-      </p>
-      <a href="/api/user/connect/email/start"
-        style={{ display: "block", padding: "0.85rem 1.5rem", backgroundColor: "#2D2D2D", color: "white", borderRadius: 10, textAlign: "center", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
-        Connect dengan Google
-      </a>
-    </div>
-  );
-}
-
-// ---------------- META (IG DM / IG POST / FB POST) ----------------
-function MetaFlow({ channel }: { channel: CapabilityChannel }) {
-  const isDmOnly = channel === "INSTAGRAM_DM";
-  const isPostOnly = channel === "INSTAGRAM_POST" || channel === "FACEBOOK_POST";
-  // Default request both scopes biar user ga perlu reconnect kalau upgrade plan.
-  const features = isDmOnly ? "dm" : isPostOnly ? "post" : "dm,post";
-  const startUrl = `/api/user/connect/meta/start?features=${features}`;
-
-  return (
-    <div>
-      <p style={{ fontSize: "0.9rem", color: "#6b6b6b", marginBottom: "1rem" }}>
-        Pega akan minta izin akses ke <strong>Facebook Page</strong> dan <strong>Instagram Business</strong> kamu via OAuth resmi Meta. Pastikan IG kamu udah <em>Business / Creator</em> dan tersambung ke FB Page.
-      </p>
-      <div style={{ padding: "0.75rem 1rem", backgroundColor: "#fef3c7", borderRadius: 10, marginBottom: "1rem", fontSize: "0.78rem", color: "#78350f", lineHeight: 1.55 }}>
-        Belum punya FB Page? <a href="https://www.facebook.com/pages/create" target="_blank" rel="noopener" style={{ color: "#92400e", fontWeight: 700, textDecoration: "underline" }}>Bikin di sini</a>, lalu sambungin IG kamu via Settings &rarr; Linked Accounts.
+      <div style={{ display: "flex", gap: 8 }}>
+        <input value={token} onChange={e => setToken(e.target.value)} placeholder="Contoh: 123456789:ABCdefGHI..."
+          style={{ flex: 1, padding: "0.7rem 1rem", border: "1px solid #ede9df", borderRadius: 10, fontSize: "0.85rem" }} />
+        <button onClick={submitToken} disabled={busy || !token.trim()}
+          style={{ padding: "0 1.2rem", background: "#2D2D2D", color: "white", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer", opacity: busy ? 0.7 : 1 }}>
+          {busy ? "Cek..." : "Konek"}
+        </button>
       </div>
-      <a href={startUrl}
-        style={{ display: "block", padding: "0.85rem 1.5rem", backgroundColor: "#1877F2", color: "white", borderRadius: 10, textAlign: "center", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
-        Connect dengan Facebook
-      </a>
-      <p style={{ fontSize: "0.72rem", color: "#9b9b9b", marginTop: "0.85rem", textAlign: "center", lineHeight: 1.55 }}>
-        Token disimpan terenkripsi (AES-256-GCM). Kamu bisa cabut akses kapan aja via{" "}
-        <a href="https://www.facebook.com/settings?tab=business_tools" target="_blank" rel="noopener" style={{ color: "#8DA399", textDecoration: "underline" }}>Meta Business Tools</a>.
-      </p>
     </div>
   );
 }
 
-// ---------------- THREADS ----------------
-function ThreadsFlow() {
-  return (
-    <div>
-      <p style={{ fontSize: "0.9rem", color: "#6b6b6b", marginBottom: "1.25rem" }}>
-        Threads pakai OAuth terpisah dari Instagram. Kamu bakal diarahkan ke threads.net untuk approve.
-      </p>
-      <a href="/api/user/connect/threads/start"
-        style={{ display: "block", padding: "0.85rem 1.5rem", backgroundColor: "#000000", color: "white", borderRadius: 10, textAlign: "center", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
-        Connect Threads
-      </a>
-    </div>
-  );
-}
-
-// ---------------- MANUAL FALLBACK ----------------
-function PegaChatFlow() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-      <p style={{ fontSize: "0.85rem", lineHeight: 1.6 }}>
-        Pega Chat aktif otomatis begitu kamu connect <strong>WhatsApp</strong> atau <strong>Telegram</strong>.
-        Gunakan untuk minta laporan, brainstorm, draft caption, dst.
-      </p>
-
-      <div style={{ background: "#1a1a1a", borderRadius: "0.6rem", padding: "0.85rem 1rem", border: "1px solid #2a2a2a" }}>
-        <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#F4F1EA", marginBottom: "0.4rem" }}>Via WhatsApp</p>
-        <p style={{ fontSize: "0.78rem", color: "#9b9b9b", lineHeight: 1.6 }}>
-          Buka WhatsApp → fitur <em>"Pesan ke diri sendiri"</em> → chat apapun.
-          Pega bakal balas sesuai paket aktif kamu. Kalau minta hal di luar paket (mis. coding di Trial),
-          Pega kasih tau perlu upgrade.
-        </p>
-      </div>
-
-      <div style={{ background: "#1a1a1a", borderRadius: "0.6rem", padding: "0.85rem 1rem", border: "1px solid #2a2a2a" }}>
-        <p style={{ fontSize: "0.78rem", fontWeight: 600, color: "#F4F1EA", marginBottom: "0.4rem" }}>Via Telegram</p>
-        <p style={{ fontSize: "0.78rem", color: "#9b9b9b", lineHeight: 1.6 }}>
-          Klik tombol Connect di card <strong>Telegram</strong>. Pilih opsi pertama (Bot Pega Pusat) →
-          tap link → Start. Setelah binding, semua chat di bot itu = personal mode.
-        </p>
-      </div>
-
-      <p style={{ fontSize: "0.72rem", color: "#9b9b9b", marginTop: "0.4rem" }}>
-        Setiap balasan tetap potong kredit sesuai cost AI real (1 kredit ≈ $0.001).
-      </p>
-    </div>
-  );
-}
-
-function ManualRequest({ channel, onSuccess }: { channel: CapabilityChannel; onSuccess: () => void }) {
+// ----------------------------------
+// Manual Connect Fallback
+// ----------------------------------
+function ManualConnect({ channel, onSuccess }: { channel: string; onSuccess: () => void }) {
   const [handle, setHandle] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -386,10 +243,9 @@ function ManualRequest({ channel, onSuccess }: { channel: CapabilityChannel; onS
   const submit = async () => {
     setBusy(true);
     try {
-      const res = await fetch("/api/user/connection-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel, handle, notes }),
+      const res = await fetch("/api/user/connect/manual", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel, handle, notes })
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.message);
@@ -411,34 +267,12 @@ function ManualRequest({ channel, onSuccess }: { channel: CapabilityChannel; onS
         <input value={handle} onChange={(e) => setHandle(e.target.value)} placeholder="Handle / nomor akun"
           style={{ padding: "0.7rem 1rem", border: "1px solid #ede9df", borderRadius: 10, fontSize: "0.9rem" }} />
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Catatan tambahan" rows={3}
-          style={{ padding: "0.7rem 1rem", border: "1px solid #ede9df", borderRadius: 10, fontSize: "0.9rem", resize: "vertical", fontFamily: "inherit" }} />
+          style={{ padding: "0.7rem 1rem", border: "1px solid #ede9df", borderRadius: 10, fontSize: "0.9rem", fontFamily: "inherit" }} />
       </div>
       <button onClick={submit} disabled={busy}
-        style={{ width: "100%", padding: "0.85rem", backgroundColor: "#2D2D2D", color: "white", border: "none", borderRadius: 10, fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}>
-        {busy ? "Mengirim..." : "Kirim Permintaan"}
+        style={{ width: "100%", padding: "0.8rem", background: "#2D2D2D", color: "white", border: "none", borderRadius: 10, fontWeight: 700, cursor: "pointer" }}>
+        {busy ? "Mengirim..." : "Kirim Request Setup"}
       </button>
     </div>
   );
-}
-
-const codeStyle: React.CSSProperties = {
-  backgroundColor: "#f3f1ec",
-  padding: "1px 6px",
-  borderRadius: 4,
-  fontFamily: "monospace",
-  fontSize: "0.85em",
-};
-
-function cardButtonStyle(bg: string, color = "white", border = "none"): React.CSSProperties {
-  return {
-    padding: "1rem 1.25rem",
-    borderRadius: 12,
-    border,
-    backgroundColor: bg,
-    cursor: "pointer",
-    color,
-    width: "100%",
-    textAlign: "left",
-    fontFamily: "inherit",
-  };
 }
