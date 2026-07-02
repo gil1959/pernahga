@@ -38,6 +38,7 @@ export async function POST() {
         instanceName,
         qrcode: true,
         webhook: webhookUrl ? webhookUrl : undefined,
+        webhook_by_events: false,
         webhook_events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT"]
       }),
     });
