@@ -20,17 +20,17 @@ export async function POST() {
     const creds = await loadActiveCreds("WHATSAPP_EVOLUTION");
     const baseUrl = creds.publicFields.baseUrl?.replace(/\/+$/, "");
     const apiKey = creds.secrets.apiKey;
-    const webhookUrl = creds.publicFields.webhookUrl;
+    let webhookUrl = creds.publicFields.webhookUrl;
     
+    if (webhookUrl && !webhookUrl.includes("www.pernahga.com")) {
+       webhookUrl = webhookUrl.replace("pernahga.com", "www.pernahga.com");
+    }
+
     if (!baseUrl || !apiKey) throw new Error("Evolution API belum diconfig oleh admin");
     const instanceName = instanceNameFor(userId);
 
-    // Force delete existing instance in case it is stuck
-    try {
-      await fetch(`${baseUrl}/instance/delete/${instanceName}`, { method: "DELETE", headers: { apikey: apiKey } });
-    } catch(e) { }
+    try { await fetch(`${baseUrl}/instance/delete/${instanceName}`, { method: "DELETE", headers: { apikey: apiKey } }); } catch(e) { }
 
-    // Create instance (Evolution v1.8.7 will instantly return QR Base64)
     const createRes = await fetch(`${baseUrl}/instance/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: apiKey },
@@ -50,7 +50,6 @@ export async function POST() {
     let qrBase64 = createData?.qrcode?.base64 || createData?.base64;
     let pairingCode = createData?.qrcode?.pairingCode || createData?.pairingCode;
     
-    // Fallback just in case instance already created
     if (!qrBase64 && !createRes.ok && createData?.response?.message?.[0]?.includes("already exists")) {
       const connRes = await fetch(`${baseUrl}/instance/connect/${instanceName}`, { headers: { apikey: apiKey } });
       const connData = await connRes.json().catch(() => ({}));
