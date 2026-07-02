@@ -3,10 +3,10 @@ import { CheckCircle2, QrCode, Sparkles, Send, MessagesSquare, Settings } from "
 import { toast } from "react-hot-toast";
 import { QRCodeSVG } from "qrcode.react";
 
-export default function ConnectModal({ capability, onSuccess, onClose }: { capability: any; onSuccess: () => void; onClose: () => void }) {
-  if (capability.channel === "WHATSAPP") return <WhatsAppConnect onSuccess={onSuccess} />;
-  if (capability.channel === "TELEGRAM") return <TelegramConnect onSuccess={onSuccess} />;
-  return <ManualConnect channel={capability.channel} onSuccess={onSuccess} />;
+export default function ConnectModal({ channel, meta, onSuccess, onClose }: { channel: any; meta?: any; onSuccess: () => void; onClose: () => void }) {
+  if (channel === "WHATSAPP") return <WhatsAppConnect onSuccess={onSuccess} />;
+  if (channel === "TELEGRAM") return <TelegramConnect onSuccess={onSuccess} />;
+  return <ManualConnect channel={channel} onSuccess={onSuccess} />;
 }
 
 // ----------------------------------
