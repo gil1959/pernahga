@@ -46,14 +46,29 @@ export async function POST() {
         } : undefined,
       }),
     });
-    let createData = await createRes.json();
+    const rawCreateText = await createRes.text();
+    let createData;
+    try {
+      createData = JSON.parse(rawCreateText);
+    } catch (e) {
+      console.error("[Evolution API] URL:", `${baseUrl}/instance/create`, "Status:", createRes.status);
+      console.error("[Evolution API] Raw HTML/Text Response (Create):", rawCreateText.slice(0, 1000));
+      throw new Error(`Evolution API Error: Failed to parse JSON (Status ${createRes.status}). Check Vercel logs for raw HTML.`);
+    }
 
     if (!createRes.ok && createData?.response?.message?.[0]?.includes("already")) {
       // Try connect endpoint to fetch fresh QR.
       const conn = await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
         headers: { apikey: apiKey },
       });
-      createData = await conn.json();
+      const rawConnText = await conn.text();
+      try {
+        createData = JSON.parse(rawConnText);
+      } catch (e) {
+        console.error("[Evolution API] URL:", `${baseUrl}/instance/connect/${instanceName}`, "Status:", conn.status);
+        console.error("[Evolution API] Raw HTML/Text Response (Connect):", rawConnText.slice(0, 1000));
+        throw new Error(`Evolution API Error: Failed to parse JSON on Connect (Status ${conn.status}). Check Vercel logs.`);
+      }
     } else if (!createRes.ok) {
       throw new Error(`Evolution API: ${JSON.stringify(createData).slice(0, 200)}`);
     }
@@ -103,7 +118,15 @@ export async function GET(req: Request) {
     const res = await fetch(`${baseUrl}/instance/connectionState/${instanceName}`, {
       headers: { apikey: apiKey },
     });
-    const data = await res.json();
+    const rawStateText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(rawStateText);
+    } catch (e) {
+      console.error("[Evolution API] URL:", `${baseUrl}/instance/connectionState/${instanceName}`, "Status:", res.status);
+      console.error("[Evolution API] Raw HTML/Text Response (State):", rawStateText.slice(0, 1000));
+      throw new Error(`Evolution API Error: Failed to parse JSON on State (Status ${res.status}). Check Vercel logs.`);
+    }
     const state = data?.instance?.state || data?.state || "unknown";
 
     // Auto-promote to ACTIVE when state=open
