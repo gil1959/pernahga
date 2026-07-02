@@ -1,11 +1,5 @@
 /**
  * POST /api/user/connect/whatsapp/start
- *   → Create Evolution API instance for current user, returns QR code.
- *
- * GET  /api/user/connect/whatsapp/status?instanceName=...
- *   → Poll connection status (CONNECTING|OPEN|CLOSE).
- *
- * Uses admin-saved Evolution credentials from IntegrationCredential.
  */
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
@@ -13,7 +7,6 @@ import { loadActiveCreds, saveUserConnection, requireCapability, IntegrationDisa
 import { prisma } from "@/lib/prisma";
 
 function instanceNameFor(userId: string) {
-  // Stable per-user instance name. Evolution API uses this as the routing key.
   return `pernahga_${userId.slice(0, 16)}`;
 }
 
@@ -32,7 +25,19 @@ export async function POST() {
 
     const instanceName = instanceNameFor(userId);
 
-    // Create instance (idempotent — Evolution returns existing if already created)
+    // [PATCH] Force delete existing instance in case it is stuck in Evolution memory
+    try {
+      await fetch(`${baseUrl}/instance/delete/${instanceName}`, {
+        method: "DELETE",
+        headers: { apikey: apiKey },
+      });
+      await fetch(`${baseUrl}/instance/logout/${instanceName}`, {
+        method: "DELETE",
+        headers: { apikey: apiKey },
+      });
+    } catch(e) { } // Ignore delete errors
+
+    // Create instance
     const createRes = await fetch(`${baseUrl}/instance/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: apiKey },
@@ -46,14 +51,29 @@ export async function POST() {
         } : undefined,
       }),
     });
-    const rawCreateText = await createRes.text();
+    
     let createData;
+    const rawCreateText = await createRes.text();
     try {
       createData = JSON.parse(rawCreateText);
     } catch (e) {
-      console.error("[Evolution API] URL:", `${baseUrl}/instance/create`, "Status:", createRes.status);
-      console.error("[Evolution API] Raw HTML/Text Response (Create):", rawCreateText.slice(0, 1000));
-      throw new Error(`Evolution API Error: Failed to parse JSON (Status ${createRes.status}). Check Vercel logs for raw HTML.`);
+      throw new Error(`Evolution API Error: Failed to parse JSON (Status ${createRes.status}).`);
+    }
+
+    // Sometimes Evolution API takes a few seconds to generate the QR if qrcode:true is used.
+    // If we only get { count: 0 } or missing base64, we manually try to hit /connect once with a small delay.
+    let qrBase64 = createData?.qrcode?.base64 || createData?.base64;
+    let pairingCode = createData?.qrcode?.pairingCode;
+    
+    if (!qrBase64 && !createData?.response?.message?.[0]?.includes("already")) {
+      // Delay explicitly for Baileys to boot up
+      await new Promise(r => setTimeout(r, 2500));
+      const conn = await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
+        headers: { apikey: apiKey },
+      });
+      const connData = await conn.json().catch(() => ({}));
+      qrBase64 = connData?.base64 || connData?.qrcode?.base64 || qrBase64;
+      pairingCode = connData?.pairingCode || connData?.qrcode?.pairingCode || pairingCode;
     }
 
     if (!createRes.ok && createData?.response?.message?.[0]?.includes("already")) {
@@ -61,19 +81,13 @@ export async function POST() {
       const conn = await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
         headers: { apikey: apiKey },
       });
-      const rawConnText = await conn.text();
-      try {
-        createData = JSON.parse(rawConnText);
-      } catch (e) {
-        console.error("[Evolution API] URL:", `${baseUrl}/instance/connect/${instanceName}`, "Status:", conn.status);
-        console.error("[Evolution API] Raw HTML/Text Response (Connect):", rawConnText.slice(0, 1000));
-        throw new Error(`Evolution API Error: Failed to parse JSON on Connect (Status ${conn.status}). Check Vercel logs.`);
-      }
+      const connData = await conn.json().catch(() => ({}));
+      qrBase64 = connData?.base64 || connData?.qrcode?.base64;
+      pairingCode = connData?.pairingCode || connData?.qrcode?.pairingCode;
     } else if (!createRes.ok) {
       throw new Error(`Evolution API: ${JSON.stringify(createData).slice(0, 200)}`);
     }
 
-        // Save initial connection row (REQUESTED until QR scanned).
     await saveUserConnection({
       userId,
       channel: "WHATSAPP",
@@ -87,9 +101,9 @@ export async function POST() {
     return NextResponse.json({
       ok: true,
       instanceName,
-      qrCode: createData?.qrcode?.base64 || createData?.base64,
-      pairingCode: createData?.qrcode?.pairingCode || null,
-      expiresIn: 60, // seconds; client should refresh after this
+      qrCode: qrBase64,
+      pairingCode: pairingCode || null,
+      expiresIn: 60,
     });
   } catch (err: unknown) {
     if (err instanceof IntegrationDisabledError) {
@@ -123,15 +137,11 @@ export async function GET(req: Request) {
     try {
       data = JSON.parse(rawStateText);
     } catch (e) {
-      console.error("[Evolution API] URL:", `${baseUrl}/instance/connectionState/${instanceName}`, "Status:", res.status);
-      console.error("[Evolution API] Raw HTML/Text Response (State):", rawStateText.slice(0, 1000));
-      throw new Error(`Evolution API Error: Failed to parse JSON on State (Status ${res.status}). Check Vercel logs.`);
+      throw new Error(`Evolution API Error: Failed to parse JSON on State (Status ${res.status}).`);
     }
     const state = data?.instance?.state || data?.state || "unknown";
 
-    // Auto-promote to ACTIVE when state=open
     if (state === "open") {
-      // Capture owner JID so Pega Engine can detect self-chat
       let ownerJid: string | null = null;
       try {
         const fetchInst = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${instanceName}`, {
@@ -140,7 +150,7 @@ export async function GET(req: Request) {
         const arr = await fetchInst.json();
         const found = Array.isArray(arr) ? arr[0] : arr;
         ownerJid = found?.ownerJid || found?.instance?.owner || found?.instance?.ownerJid || null;
-      } catch { /* best-effort */ }
+      } catch { }
 
       await prisma.$transaction([
         prisma.userConnection.updateMany({
@@ -151,13 +161,11 @@ export async function GET(req: Request) {
             publicData: JSON.stringify({ instanceName, ownerJid }),
           },
         }),
-        // Flip UserCapability.enabled so dashboard shows AKTIF
         prisma.userCapability.upsert({
           where: { userId_channel: { userId, channel: "WHATSAPP" } },
           update: { enabled: true },
           create: { userId, channel: "WHATSAPP", enabled: true, grantedByPlan: true },
         }),
-        // PEGA_CHAT auto-enabled: owner can chat self via WA
         prisma.userCapability.upsert({
           where: { userId_channel: { userId, channel: "PEGA_CHAT" } },
           update: { enabled: true, grantedByPlan: true },
