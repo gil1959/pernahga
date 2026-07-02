@@ -37,7 +37,6 @@ export async function POST() {
       body: JSON.stringify({
         instanceName,
         qrcode: true,
-        integration: "WHATSAPP-BAILEYS",
         webhook: webhookUrl ? {
           url: webhookUrl,
           events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT"],
@@ -53,10 +52,10 @@ export async function POST() {
     let qrBase64 = createData?.qrcode?.base64 || createData?.base64;
     let pairingCode = createData?.qrcode?.pairingCode || createData?.pairingCode;
     
+    // Aggressive Polling Logic for QR (up to 12 seconds)
     if (!qrBase64) {
-      // Retry logic for Evolution API v2 Baileys delay
-      for (let i = 0; i < 3; i++) {
-        await new Promise(r => setTimeout(r, 2000)); // wait 2s
+      for (let i = 0; i < 6; i++) {
+        await new Promise(r => setTimeout(r, 2000)); 
         const conn = await fetch(`${baseUrl}/instance/connect/${instanceName}`, { headers: { apikey: apiKey } });
         try {
           const connData = await conn.json();
