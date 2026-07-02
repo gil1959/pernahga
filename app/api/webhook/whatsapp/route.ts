@@ -17,8 +17,8 @@ export async function POST(req: Request) {
     return new Response("ok", { status: 200 });
   }
 
-  const engineUrl = process.env.PEGA_ENGINE_URL || "http://localhost:18090";
-  const engineToken = process.env.PEGA_ENGINE_TOKEN || "";
+  const engineUrl = "https://engine.pernahga.com";
+  const engineToken = "5f7408d6baaec5a9e4a580be80f3f5ab38f6aead517926276c8d77762a650f6f";
   
   console.log(`[wa-webhook] ENV CHECK: Token length=${engineToken.length}, startsWith=${engineToken.slice(0,4)}`);
 
