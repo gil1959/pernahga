@@ -12,9 +12,7 @@ function instanceNameFor(userId: string) {
 
 export async function POST() {
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  if (!session?.user?.id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
   try {
@@ -24,23 +22,13 @@ export async function POST() {
     const apiKey = creds.secrets.apiKey;
     const webhookUrl = creds.publicFields.webhookUrl;
     
-    if (!baseUrl || !apiKey) {
-      throw new Error("Evolution API belum diconfig oleh admin");
-    }
-
+    if (!baseUrl || !apiKey) throw new Error("Evolution API belum diconfig oleh admin");
     const instanceName = instanceNameFor(userId);
 
     // Force delete existing instance in case it is stuck
     try {
-      await fetch(`${baseUrl}/instance/delete/${instanceName}`, {
-        method: "DELETE",
-        headers: { apikey: apiKey },
-      });
-      await fetch(`${baseUrl}/instance/logout/${instanceName}`, {
-        method: "DELETE",
-        headers: { apikey: apiKey },
-      });
-    } catch(e: any) { }
+      await fetch(`${baseUrl}/instance/delete/${instanceName}`, { method: "DELETE", headers: { apikey: apiKey } });
+    } catch(e) { }
 
     // Create instance
     const createRes = await fetch(`${baseUrl}/instance/create`, {
@@ -59,49 +47,29 @@ export async function POST() {
     
     let createData;
     const rawCreateText = await createRes.text();
-    try {
-      createData = JSON.parse(rawCreateText);
-    } catch (e) {
-      throw new Error(`Evolution API Error: Failed to parse JSON (Status ${createRes.status}). ${rawCreateText.slice(0, 100)}`);
-    }
+    try { createData = JSON.parse(rawCreateText); } 
+    catch (e) { throw new Error(`Evolution API Error: Failed to parse JSON. ${rawCreateText.slice(0, 100)}`); }
 
     let qrBase64 = createData?.qrcode?.base64 || createData?.base64;
-    let pairingCode = createData?.qrcode?.pairingCode;
+    let pairingCode = createData?.qrcode?.pairingCode || createData?.pairingCode;
     
-    // In Evolution API v2, QR is often not returned in /create. 
-    // We must trigger /connect then poll /qr.
-    if (!qrBase64 && !createData?.response?.message?.[0]?.includes("already")) {
-      await new Promise(r => setTimeout(r, 2000));
-      // Trigger connect just in case
-      await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
-        headers: { apikey: apiKey },
-      });
-      await new Promise(r => setTimeout(r, 1000));
-      
-      // Fetch QR explicitly
-      const qrRes = await fetch(`${baseUrl}/instance/qr/${instanceName}`, {
-        headers: { apikey: apiKey },
-      });
-      const qrData = await qrRes.json().catch(() => ({}));
-      qrBase64 = qrData?.base64 || qrData?.qrcode?.base64 || qrBase64;
-      pairingCode = qrData?.pairingCode || qrData?.qrcode?.pairingCode || pairingCode;
-    }
-
-    if (!createRes.ok && createData?.response?.message?.[0]?.includes("already")) {
-      // Instance already exists
-      const qrRes = await fetch(`${baseUrl}/instance/qr/${instanceName}`, {
-        headers: { apikey: apiKey },
-      });
-      const qrData = await qrRes.json().catch(() => ({}));
-      qrBase64 = qrData?.base64 || qrData?.qrcode?.base64;
-      pairingCode = qrData?.pairingCode || qrData?.qrcode?.pairingCode;
-    } else if (!createRes.ok) {
-      throw new Error(`Evolution API: ${JSON.stringify(createData).slice(0, 200)}`);
-    }
-
     if (!qrBase64) {
-      throw new Error("Gagal generate QR Code dari server Evolution API.");
+      // Retry logic for Evolution API v2 Baileys delay
+      for (let i = 0; i < 3; i++) {
+        await new Promise(r => setTimeout(r, 2000)); // wait 2s
+        const conn = await fetch(`${baseUrl}/instance/connect/${instanceName}`, { headers: { apikey: apiKey } });
+        try {
+          const connData = await conn.json();
+          if (connData?.base64 || connData?.qrcode?.base64) {
+            qrBase64 = connData.base64 || connData.qrcode.base64;
+            pairingCode = connData.pairingCode || connData.qrcode?.pairingCode;
+            break;
+          }
+        } catch(e) {}
+      }
     }
+
+    if (!qrBase64) throw new Error("Gagal generate QR Code dari server Evolution API. Pastikan Baileys siap.");
 
     await saveUserConnection({
       userId,
@@ -121,14 +89,8 @@ export async function POST() {
       expiresIn: 60,
     });
   } catch (err: unknown) {
-    if (err instanceof IntegrationDisabledError) {
-      return NextResponse.json(
-        { message: "WhatsApp belum diaktifkan oleh admin. Tunggu admin enable." },
-        { status: 503 }
-      );
-    }
-    const status = (err as { status?: number })?.status || 500;
-    return NextResponse.json({ message: err instanceof Error ? err.message : "Gagal" }, { status });
+    if (err instanceof IntegrationDisabledError) return NextResponse.json({ message: "WhatsApp belum diaktifkan oleh admin." }, { status: 503 });
+    return NextResponse.json({ message: err instanceof Error ? err.message : "Gagal" }, { status: 500 });
   }
 }
 
@@ -144,24 +106,15 @@ export async function GET(req: Request) {
     const baseUrl = creds.publicFields.baseUrl?.replace(/\/+$/, "");
     const apiKey = creds.secrets.apiKey;
 
-    const res = await fetch(`${baseUrl}/instance/connectionState/${instanceName}`, {
-      headers: { apikey: apiKey },
-    });
-    const rawStateText = await res.text();
+    const res = await fetch(`${baseUrl}/instance/connectionState/${instanceName}`, { headers: { apikey: apiKey } });
     let data;
-    try {
-      data = JSON.parse(rawStateText);
-    } catch (e) {
-      throw new Error(`Evolution API Error: Failed to parse JSON on State (Status ${res.status}).`);
-    }
+    try { data = await res.json(); } catch (e) { throw new Error(`Evolution API Error: Failed to parse state JSON.`); }
     const state = data?.instance?.state || data?.state || "unknown";
 
     if (state === "open") {
       let ownerJid: string | null = null;
       try {
-        const fetchInst = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${instanceName}`, {
-          headers: { apikey: apiKey },
-        });
+        const fetchInst = await fetch(`${baseUrl}/instance/fetchInstances?instanceName=${instanceName}`, { headers: { apikey: apiKey } });
         const arr = await fetchInst.json();
         const found = Array.isArray(arr) ? arr[0] : arr;
         ownerJid = found?.ownerJid || found?.instance?.owner || found?.instance?.ownerJid || null;
@@ -170,11 +123,7 @@ export async function GET(req: Request) {
       await prisma.$transaction([
         prisma.userConnection.updateMany({
           where: { userId, channel: "WHATSAPP", externalId: instanceName },
-          data: {
-            status: "ACTIVE",
-            lastEventAt: new Date(),
-            publicData: JSON.stringify({ instanceName, ownerJid }),
-          },
+          data: { status: "ACTIVE", lastEventAt: new Date(), publicData: JSON.stringify({ instanceName, ownerJid }) },
         }),
         prisma.userCapability.upsert({
           where: { userId_channel: { userId, channel: "WHATSAPP" } },
@@ -188,7 +137,6 @@ export async function GET(req: Request) {
         }),
       ]);
     }
-
     return NextResponse.json({ ok: true, state });
   } catch (err: unknown) {
     return NextResponse.json({ message: err instanceof Error ? err.message : "Gagal" }, { status: 500 });
