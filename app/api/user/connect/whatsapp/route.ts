@@ -30,17 +30,15 @@ export async function POST() {
       await fetch(`${baseUrl}/instance/delete/${instanceName}`, { method: "DELETE", headers: { apikey: apiKey } });
     } catch(e) { }
 
-    // Create instance
+    // Create instance (Evolution v1.8.7 will instantly return QR Base64)
     const createRes = await fetch(`${baseUrl}/instance/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: apiKey },
       body: JSON.stringify({
         instanceName,
         qrcode: true,
-        webhook: webhookUrl ? {
-          url: webhookUrl,
-          events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT"],
-        } : undefined,
+        webhook: webhookUrl ? webhookUrl : undefined,
+        webhook_events: ["QRCODE_UPDATED", "CONNECTION_UPDATE", "MESSAGES_UPSERT"]
       }),
     });
     
@@ -52,20 +50,12 @@ export async function POST() {
     let qrBase64 = createData?.qrcode?.base64 || createData?.base64;
     let pairingCode = createData?.qrcode?.pairingCode || createData?.pairingCode;
     
-    // Aggressive Polling Logic for QR (up to 12 seconds)
-    if (!qrBase64) {
-      for (let i = 0; i < 6; i++) {
-        await new Promise(r => setTimeout(r, 2000)); 
-        const conn = await fetch(`${baseUrl}/instance/connect/${instanceName}`, { headers: { apikey: apiKey } });
-        try {
-          const connData = await conn.json();
-          if (connData?.base64 || connData?.qrcode?.base64) {
-            qrBase64 = connData.base64 || connData.qrcode.base64;
-            pairingCode = connData.pairingCode || connData.qrcode?.pairingCode;
-            break;
-          }
-        } catch(e) {}
-      }
+    // Fallback just in case instance already created
+    if (!qrBase64 && !createRes.ok && createData?.response?.message?.[0]?.includes("already exists")) {
+      const connRes = await fetch(`${baseUrl}/instance/connect/${instanceName}`, { headers: { apikey: apiKey } });
+      const connData = await connRes.json().catch(() => ({}));
+      qrBase64 = connData?.base64 || connData?.qrcode?.base64;
+      pairingCode = connData?.pairingCode || connData?.qrcode?.pairingCode;
     }
 
     if (!qrBase64) throw new Error("Gagal generate QR Code dari server Evolution API. Pastikan Baileys siap.");
