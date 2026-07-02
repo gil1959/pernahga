@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   }
 
   const engineUrl = process.env.PEGA_ENGINE_URL || "http://localhost:18090";
-  const engineToken = process.env.PEGA_ENGINE_TOKEN || "5f7408d6baaec5a9e4a580be80f3f5ab38f6aead517926276c8d77762a650f6f";
+  const engineToken = process.env.PEGA_ENGINE_TOKEN || "";
   
   if (engineToken) {
     try {
