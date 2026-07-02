@@ -13,11 +13,9 @@ function instanceNameFor(userId: string) {
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
-    console.error("[WA Connect] Unauthorized request");
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
-  console.log(`[WA Connect] Start connect for userId: ${userId}`);
 
   try {
     await requireCapability(userId, "WHATSAPP");
@@ -26,37 +24,25 @@ export async function POST() {
     const apiKey = creds.secrets.apiKey;
     const webhookUrl = creds.publicFields.webhookUrl;
     
-    console.log(`[WA Connect] BaseURL: ${baseUrl}, WebhookURL: ${webhookUrl}, ApiKey exists: ${!!apiKey}`);
-
     if (!baseUrl || !apiKey) {
-      console.error("[WA Connect] Configuration missing.");
       throw new Error("Evolution API belum diconfig oleh admin");
     }
 
     const instanceName = instanceNameFor(userId);
-    console.log(`[WA Connect] Instance Name: ${instanceName}`);
 
     // Force delete existing instance in case it is stuck
     try {
-      console.log(`[WA Connect] Calling DELETE /instance/delete/${instanceName}`);
-      const delRes = await fetch(`${baseUrl}/instance/delete/${instanceName}`, {
+      await fetch(`${baseUrl}/instance/delete/${instanceName}`, {
         method: "DELETE",
         headers: { apikey: apiKey },
       });
-      const delText = await delRes.text();
-      console.log(`[WA Connect] Delete response: ${delRes.status} - ${delText}`);
-      
-      const logoutRes = await fetch(`${baseUrl}/instance/logout/${instanceName}`, {
+      await fetch(`${baseUrl}/instance/logout/${instanceName}`, {
         method: "DELETE",
         headers: { apikey: apiKey },
       });
-      console.log(`[WA Connect] Logout response: ${logoutRes.status}`);
-    } catch(e: any) {
-      console.log(`[WA Connect] Delete ignore error:`, e.message);
-    }
+    } catch(e: any) { }
 
     // Create instance
-    console.log(`[WA Connect] Calling POST /instance/create`);
     const createRes = await fetch(`${baseUrl}/instance/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: apiKey },
@@ -71,57 +57,51 @@ export async function POST() {
       }),
     });
     
-    const rawCreateText = await createRes.text();
-    console.log(`[WA Connect] Create Status: ${createRes.status}`);
-    console.log(`[WA Connect] Create Response Body: ${rawCreateText.slice(0, 1000)}`);
-
     let createData;
+    const rawCreateText = await createRes.text();
     try {
       createData = JSON.parse(rawCreateText);
     } catch (e) {
-      console.error("[WA Connect] Failed to parse create JSON");
-      throw new Error(`Evolution API Error: Failed to parse JSON (Status ${createRes.status}).`);
+      throw new Error(`Evolution API Error: Failed to parse JSON (Status ${createRes.status}). ${rawCreateText.slice(0, 100)}`);
     }
 
     let qrBase64 = createData?.qrcode?.base64 || createData?.base64;
     let pairingCode = createData?.qrcode?.pairingCode;
     
+    // In Evolution API v2, QR is often not returned in /create. 
+    // We must trigger /connect then poll /qr.
     if (!qrBase64 && !createData?.response?.message?.[0]?.includes("already")) {
-      console.log(`[WA Connect] QR missing from create response. Waiting 2.5s to fetch via /connect...`);
-      await new Promise(r => setTimeout(r, 2500));
-      console.log(`[WA Connect] Calling GET /instance/connect/${instanceName}`);
-      
-      const conn = await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
+      await new Promise(r => setTimeout(r, 2000));
+      // Trigger connect just in case
+      await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
         headers: { apikey: apiKey },
       });
-      const connText = await conn.text();
-      console.log(`[WA Connect] Connect Status: ${conn.status}`);
-      console.log(`[WA Connect] Connect Response Body: ${connText.slice(0, 1000)}`);
+      await new Promise(r => setTimeout(r, 1000));
       
-      let connData;
-      try {
-        connData = JSON.parse(connText);
-      } catch (e) {
-        console.error("[WA Connect] Failed to parse connect JSON");
-      }
-      
-      qrBase64 = connData?.base64 || connData?.qrcode?.base64 || qrBase64;
-      pairingCode = connData?.pairingCode || connData?.qrcode?.pairingCode || pairingCode;
+      // Fetch QR explicitly
+      const qrRes = await fetch(`${baseUrl}/instance/qr/${instanceName}`, {
+        headers: { apikey: apiKey },
+      });
+      const qrData = await qrRes.json().catch(() => ({}));
+      qrBase64 = qrData?.base64 || qrData?.qrcode?.base64 || qrBase64;
+      pairingCode = qrData?.pairingCode || qrData?.qrcode?.pairingCode || pairingCode;
     }
 
     if (!createRes.ok && createData?.response?.message?.[0]?.includes("already")) {
-      console.log(`[WA Connect] Instance already exists. Fetching /connect directly.`);
-      const conn = await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
+      // Instance already exists
+      const qrRes = await fetch(`${baseUrl}/instance/qr/${instanceName}`, {
         headers: { apikey: apiKey },
       });
-      const connData = await conn.json().catch(() => ({}));
-      qrBase64 = connData?.base64 || connData?.qrcode?.base64;
-      pairingCode = connData?.pairingCode || connData?.qrcode?.pairingCode;
+      const qrData = await qrRes.json().catch(() => ({}));
+      qrBase64 = qrData?.base64 || qrData?.qrcode?.base64;
+      pairingCode = qrData?.pairingCode || qrData?.qrcode?.pairingCode;
     } else if (!createRes.ok) {
       throw new Error(`Evolution API: ${JSON.stringify(createData).slice(0, 200)}`);
     }
 
-    console.log(`[WA Connect] Final QR status -> Base64 present: ${!!qrBase64}, PairingCode: ${pairingCode}`);
+    if (!qrBase64) {
+      throw new Error("Gagal generate QR Code dari server Evolution API.");
+    }
 
     await saveUserConnection({
       userId,
@@ -148,7 +128,6 @@ export async function POST() {
       );
     }
     const status = (err as { status?: number })?.status || 500;
-    console.error(`[WA Connect] Final Catch Error:`, err);
     return NextResponse.json({ message: err instanceof Error ? err.message : "Gagal" }, { status });
   }
 }
