@@ -20,6 +20,8 @@ export async function POST(req: Request) {
   const engineUrl = process.env.PEGA_ENGINE_URL || "http://localhost:18090";
   const engineToken = process.env.PEGA_ENGINE_TOKEN || "";
   
+  console.log(`[wa-webhook] ENV CHECK: Token length=${engineToken.length}, startsWith=${engineToken.slice(0,4)}`);
+
   if (engineToken) {
     try {
       const resp = await fetch(`${engineUrl}/webhook/whatsapp`, {
