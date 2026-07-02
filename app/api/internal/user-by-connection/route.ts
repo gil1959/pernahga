@@ -21,57 +21,78 @@ function authOk(req: Request) {
 }
 
 export async function GET(req: Request) {
-  if (!authOk(req)) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  const url = new URL(req.url);
-  const channel = url.searchParams.get("channel") as CapabilityChannel | null;
-  const externalId = url.searchParams.get("externalId");
-  const instanceName = url.searchParams.get("instanceName");
+  try {
+    if (!authOk(req)) {
+      console.error("[user-by-connection] Auth failed. Token header mismatch.");
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
+    
+    const url = new URL(req.url);
+    const channel = url.searchParams.get("channel") as CapabilityChannel | null;
+    const externalId = url.searchParams.get("externalId");
+    const instanceName = url.searchParams.get("instanceName");
 
-  if (!channel) return NextResponse.json({ message: "channel required" }, { status: 400 });
+    if (!channel) {
+      console.error("[user-by-connection] channel required. Query:", url.search);
+      return NextResponse.json({ message: "channel required" }, { status: 400 });
+    }
 
-  // For WhatsApp, instanceName is the routing key (per-user Evolution instance).
-  const where: Record<string, unknown> = { channel, status: "ACTIVE" };
-  if (instanceName) where.externalId = instanceName;
-  else if (externalId) where.externalId = externalId;
-  else return NextResponse.json({ message: "externalId or instanceName required" }, { status: 400 });
+    const where: Record<string, unknown> = { channel, status: "ACTIVE" };
+    if (instanceName) where.externalId = instanceName;
+    else if (externalId) where.externalId = externalId;
+    else {
+      console.error("[user-by-connection] externalId or instanceName required. Query:", url.search);
+      return NextResponse.json({ message: "externalId or instanceName required" }, { status: 400 });
+    }
 
-  const conn = await prisma.userConnection.findFirst({
-    where: where as never,
-    select: {
-      id: true,
-      userId: true,
-      channel: true,
-      provider: true,
-      externalId: true,
-      label: true,
-      publicData: true,
-    },
-  });
-  if (!conn) return NextResponse.json({ message: "Not found" }, { status: 404 });
+    const conn = await prisma.userConnection.findFirst({
+      where: where as never,
+      select: {
+        id: true,
+        userId: true,
+        channel: true,
+        provider: true,
+        externalId: true,
+        label: true,
+        publicData: true,
+      },
+    });
+    
+    if (!conn) {
+      console.error(`[user-by-connection] Not found for where:`, where);
+      return NextResponse.json({ message: "Not found" }, { status: 404 });
+    }
 
-  const ws = await loadUserWorkspace(conn.userId);
-  if (!ws) return NextResponse.json({ message: "User workspace not found" }, { status: 404 });
+    const ws = await loadUserWorkspace(conn.userId);
+    if (!ws) {
+      console.error(`[user-by-connection] Workspace not found for userId: ${conn.userId}`);
+      return NextResponse.json({ message: "User workspace not found" }, { status: 404 });
+    }
 
-  const systemPrompt = buildSystemPrompt(ws);
-  const sub = await prisma.subscription.findUnique({
-    where: { userId: conn.userId },
-    select: { creditsTotal: true, creditsUsed: true, status: true, packageId: true },
-  });
-  const personalPrompt = buildPersonalSystemPrompt(ws, sub?.packageId);
+    const systemPrompt = buildSystemPrompt(ws);
+    const sub = await prisma.subscription.findUnique({
+      where: { userId: conn.userId },
+      select: { creditsTotal: true, creditsUsed: true, status: true, packageId: true },
+    });
+    const personalPrompt = buildPersonalSystemPrompt(ws, sub?.packageId);
 
-  return NextResponse.json({
-    userId: conn.userId,
-    connection: {
-      id: conn.id,
-      channel: conn.channel,
-      provider: conn.provider,
-      externalId: conn.externalId,
-      label: conn.label,
-      publicData: conn.publicData ? JSON.parse(conn.publicData) : null,
-    },
-    workspace: ws,
-    systemPrompt,
-    personalPrompt,
-    subscription: sub,
-  });
+    return NextResponse.json({
+      userId: conn.userId,
+      connection: {
+        id: conn.id,
+        channel: conn.channel,
+        provider: conn.provider,
+        externalId: conn.externalId,
+        label: conn.label,
+        publicData: conn.publicData ? JSON.parse(conn.publicData) : null,
+      },
+      workspace: ws,
+      systemPrompt,
+      personalPrompt,
+      subscription: sub,
+    });
+  } catch (err: any) {
+    console.error("[user-by-connection] FATAL ERROR:", err?.message || err, err?.stack);
+    return NextResponse.json({ message: "Internal Server Error", error: err?.message }, { status: 500 });
+  }
 }

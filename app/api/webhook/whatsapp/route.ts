@@ -21,17 +21,23 @@ export async function POST(req: Request) {
   const engineToken = process.env.PEGA_ENGINE_TOKEN || "";
   
   if (engineToken) {
-    fetch(`${engineUrl}/webhook/whatsapp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-pega-engine-token": engineToken,
-      },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(3000),
-    }).catch((err) => {
-      console.warn("[wa-webhook] Forward to Pega Engine gagal:", err?.message || err);
-    });
+    try {
+      const resp = await fetch(`${engineUrl}/webhook/whatsapp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-pega-engine-token": engineToken,
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(3000),
+      });
+      const text = await resp.text();
+      console.log(`[wa-webhook] Forward ke Pega Engine status: ${resp.status}, response: ${text}`);
+    } catch (err: any) {
+      console.error("[wa-webhook] Forward to Pega Engine gagal. Details:", err?.message || err, err?.cause);
+    }
+  } else {
+    console.error("[wa-webhook] PEGA_ENGINE_TOKEN tidak diset di Vercel env");
   }
 
   return new Response("ok", { status: 200, headers: { "Content-Type": "text/plain" } });
