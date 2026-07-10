@@ -1,0 +1,48 @@
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import PaymentFormClient from "./PaymentFormClient";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
+export default async function PaymentPage({
+  params,
+}: {
+  params: Promise<{ packageId: string }>;
+}) {
+  const { packageId } = await params;
+
+  const pkg = await prisma.package.findUnique({
+    where: { id: packageId },
+  });
+
+  if (!pkg) {
+    notFound();
+  }
+
+  const packageData = {
+    id: pkg.id,
+    title: pkg.title,
+    price: pkg.price,
+  };
+
+  return (
+    <div style={{ backgroundColor: "#F4F1EA", minHeight: "100vh", padding: "4rem 2rem" }}>
+      <div className="container-custom" style={{ maxWidth: "700px", margin: "0 auto" }}>
+        
+        <Link 
+          href={`/checkout/${pkg.id}`} 
+          style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", color: "#6b6b6b", textDecoration: "none", marginBottom: "2rem", fontSize: "0.95rem", fontWeight: 600, transition: "color 0.2s" }}
+        >
+          <ArrowLeft size={16} />
+          Kembali ke Detail Pesanan
+        </Link>
+
+        <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#2D2D2D", marginBottom: "2rem", textAlign: "center", letterSpacing: "-0.02em" }}>
+          Proses Pembayaran
+        </h1>
+        
+        <PaymentFormClient pkg={packageData} />
+      </div>
+    </div>
+  );
+}

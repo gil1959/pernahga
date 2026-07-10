@@ -40,52 +40,10 @@ export default function CheckoutForm({ pkg }: { pkg: PackageData }) {
     return priceStr;
   };
 
-  const handlePay = async () => {
+  const handlePay = () => {
     setIsLoading(true);
-    try {
-      const res = await fetch("/api/checkout/midtrans", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packageId: pkg.id, voucher }),
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        if (res.status === 401) {
-          MySwal.fire({
-            icon: "warning",
-            title: "Belum Login",
-            text: "Silakan login terlebih dahulu",
-            confirmButtonColor: "#8DA399",
-          });
-          // Redirect to login with callback
-          router.push(`/login?callbackUrl=/checkout/${pkg.id}`);
-          return;
-        }
-        throw new Error(data.message || "Terjadi kesalahan");
-      }
-
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      } else {
-        MySwal.fire({
-          icon: "error",
-          title: "Gagal",
-          text: "Gagal mendapatkan link pembayaran",
-          confirmButtonColor: "#8DA399",
-        });
-      }
-    } catch (err: any) {
-      MySwal.fire({
-        icon: "error",
-        title: "Gagal",
-        text: err.message || "Gagal memproses pembayaran",
-        confirmButtonColor: "#8DA399",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Dummy check login status maybe? Let's just route
+    router.push(`/checkout/${pkg.id}/payment`);
   };
 
   return (
