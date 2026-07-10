@@ -67,7 +67,7 @@ export default function PaymentFormClient({ pkg }: { pkg: PackageData }) {
   };
 
   const paymentMethods = [
-    { id: "dummy_offline", name: "Dummy Offline Payment", icon: <Wallet size={24} color="#8DA399" /> },
+    { id: "dummy_offline", name: "Offline Payment", icon: <Wallet size={24} color="#8DA399" /> },
     { id: "bank_bca", name: "Transfer Bank BCA", icon: <Building2 size={24} color="#8DA399" /> },
     { id: "bank_mandiri", name: "Transfer Bank Mandiri", icon: <Building2 size={24} color="#8DA399" /> },
     { id: "bank_bni", name: "Transfer Bank BNI", icon: <Building2 size={24} color="#8DA399" /> },
