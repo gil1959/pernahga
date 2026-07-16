@@ -9,6 +9,7 @@ import PackagesSection from "@/components/sections/PackagesSection";
 import ComparisonSection from "@/components/sections/ComparisonSection";
 import UseCaseSection from "@/components/sections/UseCaseSection";
 import TrustSection from "@/components/sections/TrustSection";
+import CustomSoftwareSection from "@/components/sections/CustomSoftwareSection";
 import ShowcaseSection from "@/components/sections/ShowcaseSection";
 import EducationSection from "@/components/sections/EducationSection";
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
@@ -50,6 +51,7 @@ export default async function HomePage() {
         <UseCaseSection />
         <TrustSection />
         <TestimonialsSection testimonials={testimonials} />
+        <CustomSoftwareSection />
         <ShowcaseSection showcases={showcases} />
         <EducationSection educations={educations} />
         <FAQSection />
