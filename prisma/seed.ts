@@ -2,9 +2,9 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 const defaultSettings = [
-  { key: "whatsappNumber", value: "628xxxxxxxxxx" },
+  { key: "whatsappNumber", value: "6281538724063" },
   { key: "email", value: "hello@pernahga.com" },
-  { key: "phone", value: "+62 xxx xxxx xxxx" },
+  { key: "phone", value: "081538724063" },
   { key: "address", value: "Jakarta, Indonesia" },
   { key: "heroTitle", value: "Bingung Butuh Software Apa?\nKami Bantu Carikan Solusinya" },
   { key: "heroTitleEn", value: "Confused About What Software You Need?\nWe Help Find the Solution" },
