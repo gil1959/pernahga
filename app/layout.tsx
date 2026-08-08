@@ -54,9 +54,22 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PernahGa",
+    "url": process.env.NEXT_PUBLIC_SITE_URL || "https://pernahga.com",
+    "logo": `${process.env.NEXT_PUBLIC_SITE_URL || "https://pernahga.com"}/favicon.ico`,
+    "description": "Pega adalah AI asisten managed yang menangani DM customer, posting medsos, dan operasional harian."
+  };
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <NextIntlClientProvider messages={messages} locale={locale}>
           {children}
           <Toaster

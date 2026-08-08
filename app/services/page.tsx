@@ -3,6 +3,12 @@ import Footer from "@/components/layout/Footer";
 import PackagesSection from "@/components/sections/PackagesSection";
 import { prisma } from "@/lib/prisma";
 import SessionProvider from "@/components/providers/SessionProvider";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Layanan & Harga",
+  description: "Dari konsultasi hingga implementasi software kustom, kami menyediakan solusi terpadu untuk mengembangkan bisnis Anda.",
+};
 
 export const dynamic = "force-dynamic";
 

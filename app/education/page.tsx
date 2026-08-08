@@ -3,6 +3,12 @@ import Footer from "@/components/layout/Footer";
 import EducationSection from "@/components/sections/EducationSection";
 import { prisma } from "@/lib/prisma";
 import SessionProvider from "@/components/providers/SessionProvider";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Edukasi Keahlian",
+  description: "Tingkatkan pengetahuan Anda seputar teknologi dan inovasi bisnis lewat video-video edukasi pilihan kami.",
+};
 
 export const dynamic = "force-dynamic";
 

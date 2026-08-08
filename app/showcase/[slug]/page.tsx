@@ -17,6 +17,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${showcase.title} | Portofolio Pernahga`,
     description: showcase.description,
+    openGraph: {
+      title: `${showcase.title} | Portofolio Pernahga`,
+      description: showcase.description,
+      images: showcase.thumbnail ? [showcase.thumbnail] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${showcase.title} | Portofolio Pernahga`,
+      description: showcase.description,
+      images: showcase.thumbnail ? [showcase.thumbnail] : [],
+    },
   };
 }
 

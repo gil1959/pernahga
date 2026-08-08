@@ -3,6 +3,12 @@ import Footer from "@/components/layout/Footer";
 import { prisma } from "@/lib/prisma";
 import SessionProvider from "@/components/providers/SessionProvider";
 import { Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Hubungi Kami",
+  description: "Ada pertanyaan? Tim kami siap membantu Anda memberikan solusi teknologi terbaik.",
+};
 
 export const dynamic = "force-dynamic";
 

@@ -3,6 +3,12 @@ import Footer from "@/components/layout/Footer";
 import ShowcaseSection from "@/components/sections/ShowcaseSection";
 import { prisma } from "@/lib/prisma";
 import SessionProvider from "@/components/providers/SessionProvider";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Portofolio Solusi",
+  description: "Beberapa hasil kerja nyata kami yang telah membantu mempercepat pertumbuhan bisnis klien-klien kami.",
+};
 
 export const dynamic = "force-dynamic";
 
